@@ -352,6 +352,11 @@ class StockService extends BaseService
 			throw new \Exception('Shopping list does not exist');
 		}
 
+		if (is_array($freeTextName) || is_object($freeTextName))
+		{
+			throw new \Exception('A shopping list item name is required');
+		}
+
 		$freeTextName = trim($freeTextName ?? '');
 		if ($freeTextName === '')
 		{
@@ -431,15 +436,26 @@ class StockService extends BaseService
 		}
 
 		$transactionId = null;
+		$shoppingListItem->update([
+			'product_id' => $productId
+		]);
+
 		$this->AddProduct($productId, floatval($amount), $bestBeforeDate, self::TRANSACTION_TYPE_PURCHASE, $purchasedDate, $price, $locationId, $shoppingLocationId, $transactionId, 0, false, $note);
 
-		$shoppingListItem->update([
-			'product_id' => $productId,
-			'done' => 1,
-			'completion_type' => 'stock',
-			'stock_transaction_id' => $transactionId,
-			'completed_timestamp' => date('Y-m-d H:i:s')
-		]);
+		try
+		{
+			$shoppingListItem->update([
+				'done' => 1,
+				'completion_type' => 'stock',
+				'stock_transaction_id' => $transactionId,
+				'completed_timestamp' => date('Y-m-d H:i:s')
+			]);
+		}
+		catch (\Exception $ex)
+		{
+			$this->UndoTransaction($transactionId);
+			throw $ex;
+		}
 
 		return $transactionId;
 	}

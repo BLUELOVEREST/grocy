@@ -345,6 +345,105 @@ class StockService extends BaseService
 		}
 	}
 
+	public function AddFreeTextItemToShoppingList($freeTextName, $amount = 1, $quId = null, $note = null, $listId = 1)
+	{
+		if (!$this->ShoppingListExists($listId))
+		{
+			throw new \Exception('Shopping list does not exist');
+		}
+
+		$freeTextName = trim($freeTextName);
+		if ($freeTextName === '')
+		{
+			throw new \Exception('A shopping list item name is required');
+		}
+
+		if (!is_numeric($amount) || $amount < 0)
+		{
+			throw new \Exception('Amount must be a number >= 0');
+		}
+
+		if ($quId !== null && $quId !== '')
+		{
+			if ($this->DB->quantity_units($quId) === null)
+			{
+				throw new \Exception('Quantity unit does not exist');
+			}
+		}
+		else
+		{
+			$quId = null;
+		}
+
+		$shoppinglistRow = $this->DB->shopping_list()->createRow([
+			'free_text_name' => $freeTextName,
+			'product_id' => null,
+			'amount' => $amount,
+			'qu_id' => $quId,
+			'shopping_list_id' => $listId,
+			'note' => $note,
+			'done' => 0,
+			'completion_type' => null,
+			'stock_transaction_id' => null,
+			'completed_timestamp' => null
+		]);
+		$shoppinglistRow->save();
+
+		return $shoppinglistRow->id;
+	}
+
+	public function CompleteShoppingListItemWithoutStock($shoppingListItemId)
+	{
+		$shoppingListItem = $this->DB->shopping_list($shoppingListItemId);
+		if ($shoppingListItem === null)
+		{
+			throw new \Exception('Shopping list item does not exist');
+		}
+
+		$shoppingListItem->update([
+			'done' => 1,
+			'completion_type' => 'manual',
+			'completed_timestamp' => date('Y-m-d H:i:s')
+		]);
+	}
+
+	public function AddShoppingListItemToStock($shoppingListItemId, $productId, $amount, $bestBeforeDate = null, $purchasedDate = null, $locationId = null, $shoppingLocationId = null, $price = null, $note = null)
+	{
+		$shoppingListItem = $this->DB->shopping_list($shoppingListItemId);
+		if ($shoppingListItem === null)
+		{
+			throw new \Exception('Shopping list item does not exist');
+		}
+
+		if (!$this->ProductExists($productId))
+		{
+			throw new \Exception('Product does not exist or is inactive');
+		}
+
+		if (!is_numeric($amount) || $amount <= 0)
+		{
+			throw new \Exception('Amount can\'t be <= 0');
+		}
+
+		if ($purchasedDate === null)
+		{
+			$purchasedDate = date('Y-m-d');
+		}
+
+		$transactionId = null;
+		$this->AddProduct($productId, floatval($amount), $bestBeforeDate, self::TRANSACTION_TYPE_PURCHASE, $purchasedDate, $price, $locationId, $shoppingLocationId, $transactionId, 0, false, $note);
+
+		$shoppingListItem->update([
+			'product_id' => $productId,
+			'done' => 1,
+			'completion_type' => 'stock',
+			'stock_transaction_id' => $transactionId,
+			'completed_timestamp' => date('Y-m-d H:i:s')
+		]);
+
+		return $transactionId;
+	}
+
 	public function ClearShoppingList($listId = 1, $doneOnly = false)
 	{
 		if (!$this->ShoppingListExists($listId))

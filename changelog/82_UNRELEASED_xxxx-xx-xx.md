@@ -19,6 +19,7 @@
 
 ### Shopping list
 
+- Added support for free-form shopping list items and purchase-time stock intake in the custom shopping flow.
 - Fixed that the shopping list setting (top right corner settings menu) "Round up quantity amounts to the nearest whole number" wasn't applied to shopping list item amounts where a quantity unit conversion was involved
 - Fixed that printing the shopping list with "Group by product group" enabled created duplicated product group headlines in some cases
 

@@ -352,13 +352,13 @@ class StockService extends BaseService
 			throw new \Exception('Shopping list does not exist');
 		}
 
-		$freeTextName = trim($freeTextName);
+		$freeTextName = trim($freeTextName ?? '');
 		if ($freeTextName === '')
 		{
 			throw new \Exception('A shopping list item name is required');
 		}
 
-		if (!is_numeric($amount) || $amount < 0)
+		if (!is_numeric($amount) || floatval($amount) < 0)
 		{
 			throw new \Exception('Amount must be a number >= 0');
 		}
@@ -420,7 +420,7 @@ class StockService extends BaseService
 			throw new \Exception('Product does not exist or is inactive');
 		}
 
-		if (!is_numeric($amount) || $amount <= 0)
+		if (!is_numeric($amount) || floatval($amount) <= 0)
 		{
 			throw new \Exception('Amount can\'t be <= 0');
 		}

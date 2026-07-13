@@ -105,7 +105,7 @@ $('#save-shoppinglist-button').on('click', function(e)
 		var createEndpoint = 'objects/shopping_list';
 		var createPayload = jsonData;
 
-		if (!jsonData.product_id)
+		if (!jsonData.product_id && jsonData.free_text_name && jsonData.free_text_name.trim() !== "")
 		{
 			createEndpoint = 'stock/shoppinglist/add-free-text-item';
 			createPayload = {
@@ -216,6 +216,8 @@ Grocy.Components.ProductPicker.GetPicker().on('change', function(e)
 
 	if (productId)
 	{
+		Grocy.Components.ProductAmountPicker.AllowAnyQuEnabled = false;
+
 		Grocy.Api.Get('stock/products/' + productId,
 			function(productDetails)
 			{
@@ -247,6 +249,10 @@ Grocy.Components.ProductPicker.GetPicker().on('change', function(e)
 				console.error(xhr);
 			}
 		);
+	}
+	else
+	{
+		Grocy.Components.ProductAmountPicker.AllowAnyQu(true);
 	}
 
 	$("#note").trigger("input");
@@ -346,7 +352,7 @@ else
 	}
 }
 
-var eitherRequiredFields = $("#product_id,#product_id_text_input,#free_text_name,#note");
+var eitherRequiredFields = $("#product_id,#free_text_name,#note");
 eitherRequiredFields.prop('required', "");
 eitherRequiredFields.on('input', function()
 {

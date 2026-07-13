@@ -440,10 +440,9 @@ class StockService extends BaseService
 			'product_id' => $productId
 		]);
 
-		$this->AddProduct($productId, floatval($amount), $bestBeforeDate, self::TRANSACTION_TYPE_PURCHASE, $purchasedDate, $price, $locationId, $shoppingLocationId, $transactionId, 0, false, $note);
-
 		try
 		{
+			$this->AddProduct($productId, floatval($amount), $bestBeforeDate, self::TRANSACTION_TYPE_PURCHASE, $purchasedDate, $price, $locationId, $shoppingLocationId, $transactionId, 0, false, $note);
 			$shoppingListItem->update([
 				'done' => 1,
 				'completion_type' => 'stock',
@@ -453,7 +452,17 @@ class StockService extends BaseService
 		}
 		catch (\Exception $ex)
 		{
-			$this->UndoTransaction($transactionId);
+			if ($transactionId !== null)
+			{
+				try
+				{
+					$this->UndoTransaction($transactionId);
+				}
+				catch (\Exception)
+				{
+					// Keep the original stock intake exception.
+				}
+			}
 			throw $ex;
 		}
 

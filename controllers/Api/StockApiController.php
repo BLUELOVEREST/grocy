@@ -295,6 +295,7 @@ class StockApiController extends BaseApiController
 	public function AddShoppingListItemToStock(Request $request, Response $response, array $args)
 	{
 		User::CheckPermission($request, User::PERMISSION_STOCK_PURCHASE);
+		User::CheckPermission($request, User::PERMISSION_SHOPPINGLIST_ITEMS_ADD);
 
 		try
 		{

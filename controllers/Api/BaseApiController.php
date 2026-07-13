@@ -178,6 +178,11 @@ class BaseApiController extends BaseController
 		}
 
 		$requestBody = $request->getParsedBody();
+		if (!is_array($requestBody))
+		{
+			$requestBody = [];
+		}
+
 		foreach ($requestBody as $key => &$value)
 		{
 			// HTMLPurifier removes boolean values (true/false) and arrays, so explicitly keep them

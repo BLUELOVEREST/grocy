@@ -253,9 +253,10 @@
 							title="{{ $__t('Delete this item') }}">
 							<i class="fa-solid fa-trash"></i>
 						</a>
-						<a class="btn btn-sm btn-primary @if(!GROCY_FEATURE_FLAG_STOCK) d-none @endif @if(empty($listItem->product_id)) disabled @else shopping-list-stock-add-workflow-list-item-button @endif"
-							href="{{ $U('/purchase?embedded&flow=shoppinglistitemtostock&product=') }}{{ $listItem->product_id }}&amount={{ $listItem->amount }}&listitemid={{ $listItem->id }}&quId={{ $listItem->qu_id }}"
-							@if(!empty($listItem->product_id)) data-toggle="tooltip" title="{{ $__t('Add this item to stock') }}" @endif>
+						<a class="btn btn-sm btn-primary @if(GROCY_FEATURE_FLAG_STOCK) shopping-list-stock-add-workflow-list-item-button @else d-none @endif"
+							href="{{ $U('/shoppinglistitem/' . $listItem->id . '/stock?embedded&list=' . $selectedShoppingListId) }}"
+							data-toggle="tooltip"
+							title="{{ $__t('Add this item to stock') }}">
 							<i class="fa-solid fa-box"></i>
 						</a>
 					</td>

@@ -305,6 +305,10 @@ $("#shopping-list-stock-add-workflow-modal").on("hidden.bs.modal", function (e)
 $(window).on("message", function (e)
 {
 	var data = e.originalEvent.data;
+	if (data === undefined || data.Message === undefined)
+	{
+		return;
+	}
 
 	if (data.Message === "AfterItemAdded")
 	{

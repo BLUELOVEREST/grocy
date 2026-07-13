@@ -230,6 +230,14 @@
 							title="{{ $__t('Mark this item as done') }}">
 							<i class="fa-solid fa-check"></i>
 						</a>
+						<a class="btn btn-secondary btn-sm shoppinglist-complete-without-stock-button"
+							href="#"
+							data-shoppinglist-id="{{ $listItem->id }}"
+							data-toggle="tooltip"
+							data-placement="right"
+							title="{{ $__t('Complete without adding to stock') }}">
+							<i class="fa-solid fa-check-double"></i>
+						</a>
 						<a class="btn btn-sm btn-info show-as-dialog-link"
 							href="{{ $U('/shoppinglistitem/' . $listItem->id . '?embedded&list=' . $selectedShoppingListId ) }}"
 							data-toggle="tooltip"
@@ -253,7 +261,7 @@
 					</td>
 					<td class="productcard-trigger cursor-link"
 						data-product-id="{{ $listItem->product_id }}">
-						@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+						@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@elseif(!empty($listItem->free_text_name)) <strong>{{ $listItem->free_text_name }}</strong><br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
 					</td>
 					@if(!empty($listItem->product_id))
 					@php
@@ -409,7 +417,7 @@
 					@foreach($listItems as $listItem)
 					<tr>
 						<td>
-							@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+							@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@elseif(!empty($listItem->free_text_name)) <strong>{{ $listItem->free_text_name }}</strong><br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
 						</td>
 						<td>
 							<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
@@ -441,7 +449,7 @@
 		@foreach($listItems as $listItem)
 		<div class="py-0">
 			<span class="locale-number locale-number-quantity-amount">{{ $listItem->amount }}</span> @if(!empty($listItem->product_id)){{ $__n($listItem->amount, $listItem->qu_name, $listItem->qu_name_plural, true) }}@endif
-			@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+			@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@elseif(!empty($listItem->free_text_name)) <strong>{{ $listItem->free_text_name }}</strong><br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
 		</div><br>
 		@endforeach
 	</div>

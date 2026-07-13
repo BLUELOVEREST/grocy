@@ -143,6 +143,26 @@ $(document).on('click', '.shoppinglist-delete-button', function (e)
 	);
 });
 
+$(document).on('click', '.shoppinglist-complete-without-stock-button', function (e)
+{
+	e.preventDefault();
+
+	var shoppingListItemId = $(e.currentTarget).attr('data-shoppinglist-id');
+	Grocy.FrontendHelpers.BeginUiBusy();
+
+	Grocy.Api.Post('stock/shoppinglist/items/' + shoppingListItemId + '/complete-without-stock', {},
+		function (result)
+		{
+			window.location.reload();
+		},
+		function (xhr)
+		{
+			Grocy.FrontendHelpers.EndUiBusy();
+			console.error(xhr);
+		}
+	);
+});
+
 $(document).on('click', '#add-products-below-min-stock-amount', function (e)
 {
 	Grocy.Api.Post('stock/shoppinglist/add-missing-products', { "list_id": $("#selected-shopping-list").val() },

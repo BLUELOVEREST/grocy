@@ -95,6 +95,7 @@ $app->group('', function (RouteCollectorProxy $group)
 	// Shopping list routes
 	$group->get('/shoppinglist', [StockController::class, 'ShoppingList']);
 	$group->get('/shoppinglistitem/{itemId}', [StockController::class, 'ShoppingListItemEditForm']);
+	$group->get('/shoppinglistitem/{itemId}/stock', [StockController::class, 'ShoppingListItemStockForm']);
 	$group->get('/shoppinglist/{listId}', [StockController::class, 'ShoppingListEditForm']);
 	$group->get('/shoppinglistsettings', [StockController::class, 'ShoppingListSettings']);
 

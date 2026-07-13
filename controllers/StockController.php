@@ -11,6 +11,7 @@ use Grocy\Services\UserfieldsService;
 use Grocy\Services\UsersService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Exception\HttpNotFoundException;
 
 class StockController extends BaseController
 {
@@ -488,6 +489,26 @@ class StockController extends BaseController
 				'userfields' => UserfieldsService::GetInstance()->GetFields('shopping_list')
 			]);
 		}
+	}
+
+	public function ShoppingListItemStockForm(Request $request, Response $response, array $args)
+	{
+		$listItem = $this->DB->shopping_list($args['itemId']);
+		if ($listItem === null)
+		{
+			throw new HttpNotFoundException($request, 'Shopping list item not found');
+		}
+
+		return $this->RenderPage($response, 'shoppinglistitemstockform', [
+			'listItem' => $listItem,
+			'products' => $this->DB->products()->where('active = 1 AND no_own_stock = 0')->orderBy('name', 'COLLATE NOCASE'),
+			'barcodes' => $this->DB->product_barcodes_comma_separated(),
+			'shoppinglocations' => $this->DB->shopping_locations()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
+			'locations' => $this->DB->locations()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
+			'quantityUnits' => $this->DB->quantity_units()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
+			'quantityUnitConversionsResolved' => $this->DB->cache__quantity_unit_conversions_resolved(),
+			'userfields' => UserfieldsService::GetInstance()->GetFields('stock')
+		]);
 	}
 
 	public function ShoppingListSettings(Request $request, Response $response, array $args)

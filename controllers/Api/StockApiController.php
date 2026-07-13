@@ -225,6 +225,142 @@ class StockApiController extends BaseApiController
 		}
 	}
 
+	public function AddFreeTextItemToShoppingList(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_SHOPPINGLIST_ITEMS_ADD);
+
+		try
+		{
+			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
+			if ($requestBody === null)
+			{
+				$requestBody = [];
+			}
+
+			if (!array_key_exists('free_text_name', $requestBody))
+			{
+				throw new \Exception('A shopping list item name is required');
+			}
+
+			$listId = 1;
+			if (array_key_exists('list_id', $requestBody) && is_numeric($requestBody['list_id']))
+			{
+				$listId = $requestBody['list_id'];
+			}
+
+			$amount = 1;
+			if (array_key_exists('amount', $requestBody) && is_numeric($requestBody['amount']))
+			{
+				$amount = $requestBody['amount'];
+			}
+
+			$quId = null;
+			if (array_key_exists('qu_id', $requestBody) && !empty($requestBody['qu_id']))
+			{
+				$quId = $requestBody['qu_id'];
+			}
+
+			$note = null;
+			if (array_key_exists('note', $requestBody))
+			{
+				$note = $requestBody['note'];
+			}
+
+			$newItemId = StockService::GetInstance()->AddFreeTextItemToShoppingList($requestBody['free_text_name'], $amount, $quId, $note, $listId);
+			return $this->ApiResponse($response, [
+				'created_object_id' => $newItemId
+			]);
+		}
+		catch (\Exception $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage());
+		}
+	}
+
+	public function CompleteShoppingListItemWithoutStock(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_SHOPPINGLIST_ITEMS_ADD);
+
+		try
+		{
+			StockService::GetInstance()->CompleteShoppingListItemWithoutStock($args['itemId']);
+			return $this->EmptyApiResponse($response);
+		}
+		catch (\Exception $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage());
+		}
+	}
+
+	public function AddShoppingListItemToStock(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_STOCK_PURCHASE);
+
+		try
+		{
+			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
+			if ($requestBody === null)
+			{
+				$requestBody = [];
+			}
+
+			if (!array_key_exists('product_id', $requestBody) || !is_numeric($requestBody['product_id']))
+			{
+				throw new \Exception('A product id is required');
+			}
+
+			if (!array_key_exists('amount', $requestBody) || !is_numeric($requestBody['amount']))
+			{
+				throw new \Exception('An amount is required');
+			}
+
+			$bestBeforeDate = null;
+			if (array_key_exists('best_before_date', $requestBody) && IsIsoDate($requestBody['best_before_date']))
+			{
+				$bestBeforeDate = $requestBody['best_before_date'];
+			}
+
+			$purchasedDate = null;
+			if (array_key_exists('purchased_date', $requestBody) && IsIsoDate($requestBody['purchased_date']))
+			{
+				$purchasedDate = $requestBody['purchased_date'];
+			}
+
+			$locationId = null;
+			if (array_key_exists('location_id', $requestBody) && is_numeric($requestBody['location_id']))
+			{
+				$locationId = $requestBody['location_id'];
+			}
+
+			$shoppingLocationId = null;
+			if (array_key_exists('shopping_location_id', $requestBody) && is_numeric($requestBody['shopping_location_id']))
+			{
+				$shoppingLocationId = $requestBody['shopping_location_id'];
+			}
+
+			$price = null;
+			if (array_key_exists('price', $requestBody) && is_numeric($requestBody['price']))
+			{
+				$price = $requestBody['price'];
+			}
+
+			$note = null;
+			if (array_key_exists('note', $requestBody))
+			{
+				$note = $requestBody['note'];
+			}
+
+			$transactionId = StockService::GetInstance()->AddShoppingListItemToStock($args['itemId'], $requestBody['product_id'], $requestBody['amount'], $bestBeforeDate, $purchasedDate, $locationId, $shoppingLocationId, $price, $note);
+			return $this->ApiResponse($response, [
+				'transaction_id' => $transactionId
+			]);
+		}
+		catch (\Exception $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage());
+		}
+	}
+
 	public function ClearShoppingList(Request $request, Response $response, array $args)
 	{
 		User::CheckPermission($request, User::PERMISSION_SHOPPINGLIST_ITEMS_DELETE);

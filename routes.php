@@ -227,6 +227,9 @@ $app->group('/api', function (RouteCollectorProxy $group)
 	$group->post('/stock/shoppinglist/add-expired-products', [StockApiController::class, 'AddExpiredProductsToShoppingList']);
 	$group->post('/stock/shoppinglist/clear', [StockApiController::class, 'ClearShoppingList']);
 	$group->post('/stock/shoppinglist/add-product', [StockApiController::class, 'AddProductToShoppingList']);
+	$group->post('/stock/shoppinglist/add-free-text-item', [StockApiController::class, 'AddFreeTextItemToShoppingList']);
+	$group->post('/stock/shoppinglist/items/{itemId}/complete-without-stock', [StockApiController::class, 'CompleteShoppingListItemWithoutStock']);
+	$group->post('/stock/shoppinglist/items/{itemId}/add-to-stock', [StockApiController::class, 'AddShoppingListItemToStock']);
 	$group->post('/stock/shoppinglist/remove-product', [StockApiController::class, 'RemoveProductFromShoppingList']);
 
 	// Recipes

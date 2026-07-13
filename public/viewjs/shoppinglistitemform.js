@@ -15,6 +15,16 @@ $('#save-shoppinglist-button').on('click', function(e)
 	}
 
 	var jsonData = $('#shoppinglist-form').serializeJSON();
+	if (!jsonData.product_id && (!jsonData.free_text_name || jsonData.free_text_name.trim() === ""))
+	{
+		$("#free_text_name").addClass("is-invalid");
+		return;
+	}
+	else
+	{
+		$("#free_text_name").removeClass("is-invalid");
+	}
+
 	var displayAmount = Number.parseFloat(jsonData.display_amount);
 	if (!jsonData.product_id)
 	{
@@ -92,7 +102,22 @@ $('#save-shoppinglist-button').on('click', function(e)
 	}
 	else if (Grocy.EditMode === 'create')
 	{
-		Grocy.Api.Post('objects/shopping_list', jsonData,
+		var createEndpoint = 'objects/shopping_list';
+		var createPayload = jsonData;
+
+		if (!jsonData.product_id)
+		{
+			createEndpoint = 'stock/shoppinglist/add-free-text-item';
+			createPayload = {
+				free_text_name: jsonData.free_text_name,
+				amount: jsonData.amount,
+				qu_id: jsonData.qu_id,
+				note: jsonData.note,
+				list_id: jsonData.shopping_list_id
+			};
+		}
+
+		Grocy.Api.Post(createEndpoint, createPayload,
 			function(result)
 			{
 				Grocy.EditObjectId = result.created_object_id;
@@ -315,7 +340,7 @@ else
 	}
 }
 
-var eitherRequiredFields = $("#product_id,#product_id_text_input,#note");
+var eitherRequiredFields = $("#product_id,#product_id_text_input,#free_text_name");
 eitherRequiredFields.prop('required', "");
 eitherRequiredFields.on('input', function()
 {

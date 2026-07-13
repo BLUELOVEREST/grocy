@@ -55,15 +55,26 @@
 				value="1">
 			@endif
 
+			<div class="form-group">
+				<label for="free_text_name">{{ $__t('Item name') }}</label>
+				<input class="form-control"
+					type="text"
+					id="free_text_name"
+					name="free_text_name"
+					@if($mode == 'edit') value="{{ $listItem->free_text_name }}" @endif
+					placeholder="{{ $__t('For example: tomatoes, face wash, screws') }}">
+				<div class="invalid-feedback">{{ $__t('A product or an item name is required') }}</div>
+			</div>
+
 			<div>
 				@php if($mode == 'edit') { $productId = $listItem->product_id; } else { $productId = ''; } @endphp
 				@include('components.productpicker', array(
 				'products' => $products,
 				'barcodes' => $barcodes,
 				'nextInputSelector' => '#amount',
-				'isRequired' => true,
+				'isRequired' => false,
 				'prefillById' => $productId,
-				'validationMessage' => 'A product or a note is required'
+				'validationMessage' => 'A product or an item name is required'
 				))
 			</div>
 
@@ -79,11 +90,9 @@
 			<div class="form-group">
 				<label for="note">{{ $__t('Note') }}</label>
 				<textarea class="form-control"
-					required
 					rows="10"
 					id="note"
 					name="note">@if($mode == 'edit'){{ $listItem->note }}@endif</textarea>
-				<div class="invalid-feedback">{{ $__t('A product or a note is required') }}</div>
 			</div>
 
 			@include('components.userfieldsform', array(

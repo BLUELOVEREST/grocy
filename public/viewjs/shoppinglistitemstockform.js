@@ -66,13 +66,8 @@ $('#save-shoppinglistitemstock-button').on('click', function (e)
 			{
 				if (GetUriParam("embedded") !== undefined)
 				{
-					var listId = "";
-					if (GetUriParam("list") !== undefined)
-					{
-						listId = GetUriParam("list").toString();
-					}
-
-					window.parent.postMessage(WindowMessageBag("ShoppingListChanged", listId), Grocy.BaseUrl);
+					Grocy.GetTopmostWindow().postMessage(WindowMessageBag("BroadcastMessage", WindowMessageBag("ProductChanged", jsonForm.product_id)), Grocy.BaseUrl);
+					window.parent.postMessage(WindowMessageBag("AfterItemAdded", Grocy.ShoppingListItemId), Grocy.BaseUrl);
 					window.parent.postMessage(WindowMessageBag("ShowSuccessMessage", __t('Added shopping list item to stock')), Grocy.BaseUrl);
 					window.parent.postMessage(WindowMessageBag("Ready"), Grocy.BaseUrl);
 				}

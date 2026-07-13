@@ -15,7 +15,7 @@ $('#save-shoppinglist-button').on('click', function(e)
 	}
 
 	var jsonData = $('#shoppinglist-form').serializeJSON();
-	if (!jsonData.product_id && (!jsonData.free_text_name || jsonData.free_text_name.trim() === ""))
+	if (!jsonData.product_id && (!jsonData.free_text_name || jsonData.free_text_name.trim() === "") && (!jsonData.note || jsonData.note.trim() === ""))
 	{
 		$("#free_text_name").addClass("is-invalid");
 		return;
@@ -258,11 +258,17 @@ Grocy.FrontendHelpers.ValidateForm('shoppinglist-form');
 if (Grocy.EditMode === "edit")
 {
 	Grocy.Components.ProductPicker.GetPicker().trigger('change');
+
+	if (!Grocy.Components.ProductPicker.GetValue())
+	{
+		Grocy.Components.ProductAmountPicker.AllowAnyQu(true);
+	}
 }
 
 if (Grocy.EditMode == "create")
 {
 	Grocy.ShoppingListItemFormInitialLoadDone = true;
+	Grocy.Components.ProductAmountPicker.AllowAnyQu();
 }
 
 $('#display_amount').on('focus', function(e)
@@ -340,7 +346,7 @@ else
 	}
 }
 
-var eitherRequiredFields = $("#product_id,#product_id_text_input,#free_text_name");
+var eitherRequiredFields = $("#product_id,#product_id_text_input,#free_text_name,#note");
 eitherRequiredFields.prop('required', "");
 eitherRequiredFields.on('input', function()
 {

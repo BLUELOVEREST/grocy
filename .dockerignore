@@ -1,0 +1,14 @@
+.git
+.gitea
+.github
+.worktrees
+.release
+data
+packages
+public/packages
+node_modules
+vendor
+*.log
+docker-compose.yml
+.env
+.env.*

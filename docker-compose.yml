@@ -1,0 +1,16 @@
+services:
+  eric-grocy:
+    image: ${ERIC_GROCY_IMAGE:-192.168.200.101:54453/zhangzhicheng/eric-grocy}:${ERIC_GROCY_VERSION:-latest}
+    container_name: eric-grocy
+    restart: unless-stopped
+    ports:
+      - "${ERIC_GROCY_PORT:-9284}:80"
+    environment:
+      GROCY_BASE_URL: ${GROCY_BASE_URL:-/}
+      GROCY_MODE: ${GROCY_MODE:-production}
+      GROCY_DEFAULT_LOCALE: ${GROCY_DEFAULT_LOCALE:-zh_CN}
+      GROCY_CURRENCY: ${GROCY_CURRENCY:-CNY}
+      GROCY_DISABLE_AUTH: ${GROCY_DISABLE_AUTH:-false}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ${ERIC_GROCY_DATA_PATH:-./data}:/var/www/html/data

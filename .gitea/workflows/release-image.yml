@@ -1,0 +1,62 @@
+name: Build And Push Eric Grocy Image
+
+on:
+  push:
+    tags:
+      - 'v*-eric.*'
+
+jobs:
+  build-and-push:
+    runs-on: ci
+
+    defaults:
+      run:
+        shell: sh
+
+    env:
+      REGISTRY: 192.168.200.101:54453
+      IMAGE_REPOSITORY: zhangzhicheng/eric-grocy
+      GROCY_BASE_VERSION: 4.6.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          uname -a
+          cat /etc/os-release || true
+          docker version
+          echo "Tag: ${GITHUB_REF_NAME}"
+          echo "Commit: ${GITHUB_SHA}"
+
+      - name: Validate version tag
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            v${GROCY_BASE_VERSION}-eric.*) ;;
+            *)
+              echo "Tag must be v${GROCY_BASE_VERSION}-eric.N, got ${GITHUB_REF_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Login to Gitea Registry
+        run: |
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${REGISTRY} -u "${{ secrets.REGISTRY_USER }}" --password-stdin
+
+      - name: Build image
+        run: |
+          ERIC_GROCY_VERSION="${GITHUB_REF_NAME#v}"
+          docker build \
+            --build-arg ERIC_GROCY_VERSION="${ERIC_GROCY_VERSION}" \
+            --build-arg GROCY_BASE_VERSION="${GROCY_BASE_VERSION}" \
+            -t ${REGISTRY}/${IMAGE_REPOSITORY}:${GITHUB_REF_NAME} \
+            -t ${REGISTRY}/${IMAGE_REPOSITORY}:latest \
+            -t ${REGISTRY}/${IMAGE_REPOSITORY}:sha-${GITHUB_SHA} \
+            .
+
+      - name: Push image tags
+        run: |
+          docker push ${REGISTRY}/${IMAGE_REPOSITORY}:${GITHUB_REF_NAME}
+          docker push ${REGISTRY}/${IMAGE_REPOSITORY}:latest
+          docker push ${REGISTRY}/${IMAGE_REPOSITORY}:sha-${GITHUB_SHA}

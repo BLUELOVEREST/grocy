@@ -91,9 +91,6 @@
 
 	@stack('pageStyles')
 
-	<link href="{{ $U('/css/eric_apple_theme.css?v=', true) }}{{ $version }}"
-		rel="stylesheet">
-
 	@if(file_exists(GROCY_DATAPATH . '/custom_css.html'))
 	@php include GROCY_DATAPATH . '/custom_css.html' @endphp
 	@endif

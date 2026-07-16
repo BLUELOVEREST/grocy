@@ -1,82 +1,121 @@
-﻿function saveProductPicture(result, location, jsonData)
+﻿function redirectAfterProductSave(productId, location)
+{
+	if (Grocy.ProductEditFormRedirectUri == "reload")
+	{
+		window.location.reload();
+		return;
+	}
+
+	var returnTo = GetUriParam('returnto');
+	if (GetUriParam("closeAfterCreation") !== undefined)
+	{
+		window.close();
+	}
+	else if (returnTo !== undefined)
+	{
+		if (GetUriParam("flow") !== undefined)
+		{
+			window.location.href = U(returnTo) + '&product-name=' + encodeURIComponent($('#name').val());
+		}
+		else
+		{
+			window.location.href = U(returnTo);
+		}
+	}
+	else
+	{
+		window.location.href = U(location + productId);
+	}
+}
+
+function collectProductPropertyTemplateDefinitions()
+{
+	var definitions = [];
+	$('#product-property-template-table tbody tr').each(function(index, row)
+	{
+		var currentRow = $(row);
+		var label = currentRow.find('.product-property-label').val().trim();
+		var name = currentRow.find('.product-property-name').val().trim();
+
+		if (label === '' && name === '')
+		{
+			return;
+		}
+
+		definitions.push({
+			id: currentRow.attr('data-property-definition-id') || undefined,
+			name: name,
+			label: label,
+			type: currentRow.find('.product-property-type').val(),
+			unit: currentRow.find('.product-property-unit').val(),
+			options: currentRow.find('.product-property-options').val(),
+			input_required: currentRow.find('.product-property-required').prop('checked'),
+			sort_number: (index + 1) * 10
+		});
+	});
+
+	return definitions;
+}
+
+function collectProductPropertyValues()
+{
+	var values = [];
+	$('#product-property-values-container .product-property-value').each(function(index, input)
+	{
+		var currentInput = $(input);
+		var value = currentInput.attr('type') === 'checkbox' ? (currentInput.prop('checked') ? '1' : '0') : currentInput.val();
+		values.push({
+			property_definition_id: currentInput.attr('data-property-definition-id'),
+			value: value
+		});
+	});
+
+	return values;
+}
+
+function saveProductPropertyMetadata(productId, jsonData, success, error)
+{
+	if (jsonData.parent_product_id)
+	{
+		Grocy.Api.Put('product-properties/' + productId, { values: collectProductPropertyValues() }, success, error);
+		return;
+	}
+
+	Grocy.Api.Put('product-property-templates/' + productId, { definitions: collectProductPropertyTemplateDefinitions() }, success, error);
+}
+
+function saveProductPicture(result, location, jsonData)
 {
 	var productId = Grocy.EditObjectId || result.created_object_id;
 	Grocy.EditObjectId = productId; // Grocy.EditObjectId is not yet set when adding a product
 
-	Grocy.Components.UserfieldsForm.Save(() =>
+	saveProductPropertyMetadata(productId, jsonData, function()
 	{
-		if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
+		Grocy.Components.UserfieldsForm.Save(() =>
 		{
-			Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
-				(result) =>
-				{
-					if (Grocy.ProductEditFormRedirectUri == "reload")
-					{
-						window.location.reload();
-						return;
-					}
-
-					var returnTo = GetUriParam('returnto');
-					if (GetUriParam("closeAfterCreation") !== undefined)
-					{
-						window.close();
-					}
-					else if (returnTo !== undefined)
-					{
-						if (GetUriParam("flow") !== undefined)
-						{
-							window.location.href = U(returnTo) + '&product-name=' + encodeURIComponent($('#name').val());
-						}
-						else
-						{
-							window.location.href = U(returnTo);
-						}
-
-					}
-					else
-					{
-						window.location.href = U(location + productId);
-					}
-
-				},
-				(xhr) =>
-				{
-					Grocy.FrontendHelpers.EndUiBusy("product-form");
-					Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
-				}
-			);
-		}
-		else
-		{
-			if (Grocy.ProductEditFormRedirectUri == "reload")
+			if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
 			{
-				window.location.reload();
-				return
-			}
-
-			var returnTo = GetUriParam('returnto');
-			if (GetUriParam("closeAfterCreation") !== undefined)
-			{
-				window.close();
-			}
-			else if (returnTo !== undefined)
-			{
-				if (GetUriParam("flow") !== undefined)
-				{
-					window.location.href = U(returnTo) + '&product-name=' + encodeURIComponent($('#name').val());
-				}
-				else
-				{
-					window.location.href = U(returnTo);
-				}
+				Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
+					() => redirectAfterProductSave(productId, location),
+					(xhr) =>
+					{
+						Grocy.FrontendHelpers.EndUiBusy("product-form");
+						Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
+					}
+				);
 			}
 			else
 			{
-				window.location.href = U(location + productId);
+				redirectAfterProductSave(productId, location);
 			}
-		}
+		});
+	}, function(xhr)
+	{
+		Grocy.FrontendHelpers.EndUiBusy("product-form");
+		Grocy.FrontendHelpers.ShowGenericError('Error while saving product properties', xhr.response);
 	});
 }
+
 
 $('.save-product-button').on('click', function(e)
 {
@@ -254,6 +293,188 @@ var barcodeTable = $('#barcode-table').DataTable({
 });
 $('#barcode-table tbody').removeClass("d-none");
 barcodeTable.columns.adjust().draw();
+
+function normalizeProductPropertyName(value)
+{
+	var normalized = value.toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+	if (normalized === '' || /^[0-9]/.test(normalized))
+	{
+		normalized = 'property_' + normalized;
+	}
+
+	return normalized;
+}
+
+function createProductPropertyTemplateRow(definition)
+{
+	definition = definition || {};
+	var row = $('<tr class="product-property-template-row"></tr>');
+	if (definition.id !== undefined && definition.id !== null)
+	{
+		row.attr('data-property-definition-id', definition.id);
+	}
+
+	row.append($('<td></td>').append($('<input type="text" class="form-control form-control-sm product-property-name">').val(definition.name || '')));
+	row.append($('<td></td>').append($('<input type="text" class="form-control form-control-sm product-property-label">').val(definition.label || '')));
+
+	var typeSelect = $('<select class="custom-control custom-select custom-select-sm product-property-type"></select>');
+	[
+		{ value: 'text', label: 'Text' },
+		{ value: 'number', label: 'Number' },
+		{ value: 'select', label: 'Select list' },
+		{ value: 'checkbox', label: 'Checkbox' }
+	].forEach(function(option)
+	{
+		typeSelect.append($('<option></option>').attr('value', option.value).text(__t(option.label)));
+	});
+	typeSelect.val(definition.type || 'text');
+	row.append($('<td></td>').append(typeSelect));
+
+	row.append($('<td></td>').append($('<input type="text" class="form-control form-control-sm product-property-unit">').val(definition.unit || '')));
+	row.append($('<td></td>').append($('<textarea class="form-control form-control-sm product-property-options" rows="1"></textarea>').val(definition.options || '')));
+	row.append($('<td class="text-center"></td>').append($('<input type="checkbox" class="product-property-required">').prop('checked', BoolVal(definition.input_required))));
+	row.append($('<td class="text-right"></td>').append($('<button type="button" class="btn btn-sm btn-danger product-property-delete-row-button"><i class="fa-solid fa-trash"></i></button>')));
+
+	return row;
+}
+
+function renderProductPropertyTemplate(definitions)
+{
+	var tableBody = $('#product-property-template-table tbody');
+	tableBody.empty();
+
+	definitions.forEach(function(definition)
+	{
+		tableBody.append(createProductPropertyTemplateRow(definition));
+	});
+}
+
+function renderProductPropertyValues(definitions)
+{
+	var container = $('#product-property-values-container');
+	container.empty();
+
+	if (definitions.length === 0)
+	{
+		container.append($('<p class="text-muted mb-0"></p>').text(__t('No property template is defined for the selected parent product')));
+		return;
+	}
+
+	definitions.forEach(function(definition)
+	{
+		var group = $('<div class="form-group"></div>');
+		var labelText = definition.label + (definition.unit ? ' (' + definition.unit + ')' : '');
+		group.append($('<label></label>').text(labelText));
+
+		var input;
+		if (definition.type === 'select')
+		{
+			input = $('<select class="custom-control custom-select product-property-value"></select>');
+			input.append($('<option></option>'));
+			(definition.options || '').split(/\r?\n/).forEach(function(option)
+			{
+				option = option.trim();
+				if (option !== '')
+				{
+					input.append($('<option></option>').attr('value', option).text(option));
+				}
+			});
+			input.val(definition.value || '');
+		}
+		else if (definition.type === 'checkbox')
+		{
+			input = $('<input type="checkbox" class="product-property-value">').prop('checked', BoolVal(definition.value));
+			group = $('<div class="form-group custom-control custom-checkbox"></div>');
+			input.addClass('form-check-input custom-control-input').attr('id', 'product-property-value-' + definition.id);
+			group.append(input);
+			group.append($('<label class="form-check-label custom-control-label"></label>').attr('for', 'product-property-value-' + definition.id).text(labelText));
+		}
+		else
+		{
+			input = $('<input class="form-control product-property-value">').attr('type', definition.type === 'number' ? 'number' : 'text').val(definition.value || '');
+		}
+
+		input.attr('data-property-definition-id', definition.id);
+		if (BoolVal(definition.input_required))
+		{
+			input.attr('required', 'required');
+		}
+
+		if (definition.type !== 'checkbox')
+		{
+			group.append(input);
+		}
+
+		container.append(group);
+	});
+}
+
+function loadProductPropertyUi(parentProductId)
+{
+	if (parentProductId)
+	{
+		$('#product-property-template-section').addClass('d-none');
+		$('#product-property-values-section').removeClass('d-none');
+
+		if (Grocy.EditMode === 'edit' && parentProductId == Grocy.InitialParentProductId)
+		{
+			Grocy.Api.Get('product-properties/' + Grocy.EditObjectId, function(result)
+			{
+				renderProductPropertyValues(result.definitions || []);
+			}, function(xhr)
+			{
+				console.error(xhr);
+			});
+		}
+		else
+		{
+			Grocy.Api.Get('product-property-templates/' + parentProductId, function(definitions)
+			{
+				renderProductPropertyValues(definitions || []);
+			}, function(xhr)
+			{
+				console.error(xhr);
+			});
+		}
+		return;
+	}
+
+	$('#product-property-values-section').addClass('d-none');
+	$('#product-property-template-section').removeClass('d-none');
+
+	if (Grocy.EditMode === 'edit')
+	{
+		Grocy.Api.Get('product-property-templates/' + Grocy.EditObjectId, function(definitions)
+		{
+			renderProductPropertyTemplate(definitions || []);
+		}, function(xhr)
+		{
+			console.error(xhr);
+		});
+	}
+}
+
+$('#add-product-property-definition-row').on('click', function(e)
+{
+	e.preventDefault();
+	$('#product-property-template-table tbody').append(createProductPropertyTemplateRow());
+});
+
+$(document).on('click', '.product-property-delete-row-button', function(e)
+{
+	e.preventDefault();
+	$(e.currentTarget).closest('tr').remove();
+});
+
+$(document).on('blur', '.product-property-label', function(e)
+{
+	var row = $(e.currentTarget).closest('tr');
+	var nameInput = row.find('.product-property-name');
+	if (nameInput.val().trim() === '')
+	{
+		nameInput.val(normalizeProductPropertyName($(e.currentTarget).val()));
+	}
+});
 
 Grocy.Components.UserfieldsForm.Load();
 $("#name").trigger("keyup");
@@ -504,9 +725,12 @@ else if (Grocy.EditMode === 'create')
 	}
 }
 
+Grocy.InitialParentProductId = Grocy.Components.ProductPicker.GetPicker().val();
+
 Grocy.Components.ProductPicker.GetPicker().on('change', function(e)
 {
 	var parentProductId = $(e.target).val();
+	loadProductPropertyUi(parentProductId);
 
 	if (parentProductId)
 	{

@@ -666,6 +666,40 @@
 				</div>
 			</div>
 
+			<div id="product-property-template-section" class="card mb-3 d-none">
+				<div class="card-header">
+					<strong>{{ $__t('Property template') }}</strong>
+					<p class="mb-0 small text-muted">{{ $__t('Define the attributes child products of this parent product should fill') }}</p>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-sm" id="product-property-template-table">
+							<thead>
+								<tr>
+									<th>{{ $__t('Name') }}</th>
+									<th>{{ $__t('Caption') }}</th>
+									<th>{{ $__t('Type') }}</th>
+									<th>{{ $__t('Unit') }}</th>
+									<th>{{ $__t('Options') }}</th>
+									<th>{{ $__t('Required') }}</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+					<button type="button" id="add-product-property-definition-row" class="btn btn-sm btn-outline-secondary">{{ $__t('Add') }}</button>
+				</div>
+			</div>
+
+			<div id="product-property-values-section" class="card mb-3 d-none">
+				<div class="card-header">
+					<strong>{{ $__t('Product properties') }}</strong>
+					<p class="mb-0 small text-muted">{{ $__t('Fill the attributes defined by the parent product') }}</p>
+				</div>
+				<div class="card-body" id="product-property-values-container"></div>
+			</div>
+
 			@include('components.userfieldsform', array(
 			'userfields' => $userfields,
 			'entity' => 'products'

@@ -6,6 +6,7 @@ use Grocy\Controllers\Api\ChoresApiController;
 use Grocy\Controllers\Api\FilesApiController;
 use Grocy\Controllers\Api\GenericEntityApiController;
 use Grocy\Controllers\Api\OpenApiController;
+use Grocy\Controllers\Api\ProductPropertiesApiController;
 use Grocy\Controllers\Api\PrintApiController;
 use Grocy\Controllers\Api\RecipesApiController;
 use Grocy\Controllers\Api\StockApiController;
@@ -191,6 +192,12 @@ $app->group('/api', function (RouteCollectorProxy $group)
 	$group->get('/user/settings/{settingKey}', [UsersApiController::class, 'GetUserSetting']);
 	$group->put('/user/settings/{settingKey}', [UsersApiController::class, 'SetUserSetting']);
 	$group->delete('/user/settings/{settingKey}', [UsersApiController::class, 'DeleteUserSetting']);
+
+	// Product property templates
+	$group->get('/product-property-templates/{parentProductId}', [ProductPropertiesApiController::class, 'GetTemplate']);
+	$group->put('/product-property-templates/{parentProductId}', [ProductPropertiesApiController::class, 'SetTemplate']);
+	$group->get('/product-properties/{productId}', [ProductPropertiesApiController::class, 'GetProperties']);
+	$group->put('/product-properties/{productId}', [ProductPropertiesApiController::class, 'SetProperties']);
 
 	// Stock
 	$group->get('/stock', [StockApiController::class, 'CurrentStock']);

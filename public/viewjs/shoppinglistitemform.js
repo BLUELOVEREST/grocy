@@ -352,14 +352,25 @@ else
 	}
 }
 
-var eitherRequiredFields = $("#product_id,#free_text_name,#note");
-eitherRequiredFields.prop('required', "");
-eitherRequiredFields.on('input', function()
+var itemIdentityFields = $("#product_id,#free_text_name,#note");
+function UpdateShoppingListItemRequiredFields()
 {
-	eitherRequiredFields.not(this).prop('required', !$(this).val().length);
+	var hasAnyItemIdentity = false;
+	itemIdentityFields.each(function()
+	{
+		if ($(this).val() && $(this).val().trim() !== "")
+		{
+			hasAnyItemIdentity = true;
+		}
+	});
+
+	// The product association is optional for free-form shopping list items.
+	$("#product_id,#note").prop('required', false);
+	$("#free_text_name").prop('required', !hasAnyItemIdentity);
 	Grocy.FrontendHelpers.ValidateForm('shoppinglist-form');
-});
-eitherRequiredFields.trigger("input");
+}
+itemIdentityFields.on('input change', UpdateShoppingListItemRequiredFields);
+UpdateShoppingListItemRequiredFields();
 
 if (GetUriParam("product-name") != null)
 {

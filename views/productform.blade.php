@@ -500,18 +500,74 @@
 				value="0">
 			@endif
 
-			@php if($mode == 'edit') { $value = $product->calories; } else { $value = 0; } @endphp
-			@include('components.numberpicker', array(
-			'id' => 'calories',
-			'label' => 'Energy',
-			'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
-			'decimals' => $userSettings['stock_decimal_places_amounts'],
-			'value' => $value,
-			'hint' => $__t('Per stock quantity unit'),
-			'contextInfoId' => 'energy_qu_info',
-			'isRequired' => false,
-			'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
-			))
+			<div class="form-group">
+				<div class="custom-control custom-checkbox">
+					<input @if($mode=='edit'
+						&&
+						$product->is_food == 1) checked @endif class="form-check-input custom-control-input" type="checkbox" id="is_food" name="is_food" value="1">
+					<label class="form-check-label custom-control-label"
+						for="is_food">{{ $__t('Food product') }}
+						&nbsp;<i class="fa-solid fa-question-circle text-muted"
+							data-toggle="tooltip"
+							data-trigger="hover click"
+							title="{{ $__t('Enables nutrition fields for this product') }}"></i>
+					</label>
+				</div>
+			</div>
+
+			<div id="product-nutrition-fields">
+				@php if($mode == 'edit') { $value = $product->calories; } else { $value = 0; } @endphp
+				@include('components.numberpicker', array(
+				'id' => 'calories',
+				'label' => 'Energy',
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => $value,
+				'hint' => $__t('Per stock quantity unit'),
+				'contextInfoId' => 'energy_qu_info',
+				'isRequired' => false,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				))
+
+				@php if($mode == 'edit') { $value = $product->protein; } else { $value = 0; } @endphp
+				@include('components.numberpicker', array(
+				'id' => 'protein',
+				'label' => 'Protein',
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => $value,
+				'hint' => $__t('Per stock quantity unit'),
+				'contextInfoId' => 'protein_qu_info',
+				'isRequired' => false,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				))
+
+				@php if($mode == 'edit') { $value = $product->fat; } else { $value = 0; } @endphp
+				@include('components.numberpicker', array(
+				'id' => 'fat',
+				'label' => 'Fat',
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => $value,
+				'hint' => $__t('Per stock quantity unit'),
+				'contextInfoId' => 'fat_qu_info',
+				'isRequired' => false,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				))
+
+				@php if($mode == 'edit') { $value = $product->carbohydrates; } else { $value = 0; } @endphp
+				@include('components.numberpicker', array(
+				'id' => 'carbohydrates',
+				'label' => 'Carbohydrates',
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => $value,
+				'hint' => $__t('Per stock quantity unit'),
+				'contextInfoId' => 'carbohydrates_qu_info',
+				'isRequired' => false,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				))
+			</div>
 
 			@php if($mode == 'edit') { $value = $product->quick_consume_amount; } else { $value = 1; } @endphp
 			@include('components.numberpicker', array(

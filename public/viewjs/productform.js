@@ -127,6 +127,7 @@ $('.save-product-button').on('click', function(e)
 	}
 
 	var jsonData = $('#product-form').serializeJSON();
+	jsonData.is_food = $("#is_food").prop("checked") ? "1" : "0";
 	var parentProductId = jsonData.product_id;
 	delete jsonData.product_id;
 	jsonData.parent_product_id = parentProductId;
@@ -195,9 +196,25 @@ $('.input-group-qu').on('change', function(e)
 	$("#quick_consume_qu_info").text($("#qu_id_stock option:selected").text());
 	$("#quick_open_qu_info").text($("#qu_id_stock option:selected").text());
 	$("#energy_qu_info").text(Grocy.EnergyUnit + " / " + $("#qu_id_stock option:selected").text());
+	$("#protein_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
+	$("#fat_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
+	$("#carbohydrates_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
 
 	Grocy.FrontendHelpers.ValidateForm('product-form');
 });
+
+
+function refreshNutritionFieldsVisibility()
+{
+	$("#product-nutrition-fields").toggleClass("d-none", !$("#is_food").prop("checked"));
+}
+
+$("#is_food").on("change", function()
+{
+	refreshNutritionFieldsVisibility();
+});
+
+refreshNutritionFieldsVisibility();
 
 $('#product-form input').keyup(function(event)
 {
@@ -653,10 +670,27 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 			{
 				$("#not_check_stock_fulfillment_for_recipes").prop("checked", true);
 			}
+			if (BoolVal(sourceProduct.is_food))
+			{
+				$("#is_food").prop("checked", true);
+			}
 			if (sourceProduct.calories != null)
 			{
 				$("#calories").val(sourceProduct.calories);
 			}
+			if (sourceProduct.protein != null)
+			{
+				$("#protein").val(sourceProduct.protein);
+			}
+			if (sourceProduct.fat != null)
+			{
+				$("#fat").val(sourceProduct.fat);
+			}
+			if (sourceProduct.carbohydrates != null)
+			{
+				$("#carbohydrates").val(sourceProduct.carbohydrates);
+			}
+			refreshNutritionFieldsVisibility();
 			$("#default_best_before_days_after_freezing").val(sourceProduct.default_best_before_days_after_freezing);
 			$("#default_best_before_days_after_thawing").val(sourceProduct.default_best_before_days_after_thawing);
 			$("#quick_consume_amount").val(sourceProduct.quick_consume_amount);

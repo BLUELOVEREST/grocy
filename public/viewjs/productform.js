@@ -99,6 +99,8 @@ function setFoodNutritionLoadComplete(isComplete)
 
 function collectFoodNutritionPayload()
 {
+	var stockToBasisFactor = $('#stock-to-basis-conversion-fields').hasClass('d-none') || $('#stock_to_basis_factor').val() === '' ? null : $('#stock_to_basis_factor').val();
+
 	return {
 		is_food: $('#is_food').prop('checked'),
 		basis_amount: $('#nutrition_basis_amount').val(),
@@ -107,7 +109,7 @@ function collectFoodNutritionPayload()
 		protein: $('#nutrition_protein').val(),
 		fat: $('#nutrition_fat').val(),
 		carbohydrates: $('#nutrition_carbohydrates').val(),
-		stock_to_basis_factor: $('#stock-to-basis-conversion-fields').hasClass('d-none') ? null : $('#stock_to_basis_factor').val()
+		stock_to_basis_factor: stockToBasisFactor
 	};
 }
 
@@ -223,6 +225,10 @@ function populateFoodNutritionFields(result, fallbackProduct)
 	{
 		$('#stock_to_basis_factor').val(result.stock_to_basis_conversion.factor);
 	}
+	else
+	{
+		$('#stock_to_basis_factor').val("");
+	}
 
 	refreshNutritionFieldsVisibility();
 	Grocy.FrontendHelpers.ValidateForm('product-form');
@@ -237,13 +243,6 @@ function loadFoodNutrition(productId, fallbackProduct)
 		setFoodNutritionLoadComplete(true);
 	}, function(xhr)
 	{
-		if (fallbackProduct !== undefined)
-		{
-			populateFoodNutritionFields({ is_food: fallbackProduct.is_food, nutrition: null, stock_to_basis_conversion: null }, fallbackProduct);
-			setFoodNutritionLoadComplete(true);
-			return;
-		}
-
 		Grocy.FrontendHelpers.ShowGenericError('Error while loading food nutrition; saving is disabled to prevent overwriting existing nutrition data', xhr.response);
 		console.error(xhr);
 		refreshFoodNutritionSaveState();

@@ -614,7 +614,7 @@
 				'label' => 'Stock-to-basis conversion',
 				'min' => $DEFAULT_MIN_AMOUNT,
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
-				'value' => 1,
+				'value' => '',
 				'hint' => $__t('Conversion from stock quantity unit to nutrition basis quantity unit'),
 				'contextInfoId' => 'stock_to_basis_factor_qu_info',
 				'isRequired' => false,

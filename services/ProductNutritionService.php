@@ -39,7 +39,7 @@ class ProductNutritionService extends BaseService
 
 		if ($isFood === 0)
 		{
-			$product->update(['is_food' => $isFood]);
+			$this->SaveNonFoodNutrition($product, $isFood);
 			return $this->GetNutrition($productId);
 		}
 
@@ -61,21 +61,56 @@ class ProductNutritionService extends BaseService
 		];
 		$stockToBasisFactor = $this->NormalizeStockToBasisFactor((int)$product->qu_id_stock, $basisQuId, $payload);
 
-		$product->update(['is_food' => $isFood]);
-
-		$existing = $this->DB->product_nutrition()->where('product_id', $productId)->fetch();
-		if ($existing === null)
+		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
+		$pdo->beginTransaction();
+		try
 		{
-			$this->DB->product_nutrition()->createRow($values)->save();
-		}
-		else
-		{
-			$existing->update($values);
-		}
+			$product->update(['is_food' => $isFood]);
 
-		$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $stockToBasisFactor);
+			$existing = $this->DB->product_nutrition()->where('product_id', $productId)->fetch();
+			if ($existing === null)
+			{
+				$this->DB->product_nutrition()->createRow($values)->save();
+			}
+			else
+			{
+				$existing->update($values);
+			}
+
+			$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $stockToBasisFactor);
+			$pdo->commit();
+		}
+		catch (\Throwable $ex)
+		{
+			if ($pdo->inTransaction())
+			{
+				$pdo->rollback();
+			}
+
+			throw $ex;
+		}
 
 		return $this->GetNutrition($productId);
+	}
+
+	private function SaveNonFoodNutrition($product, $isFood)
+	{
+		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
+		$pdo->beginTransaction();
+		try
+		{
+			$product->update(['is_food' => $isFood]);
+			$pdo->commit();
+		}
+		catch (\Throwable $ex)
+		{
+			if ($pdo->inTransaction())
+			{
+				$pdo->rollback();
+			}
+
+			throw $ex;
+		}
 	}
 
 	private function NormalizeIsFood($value)

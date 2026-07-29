@@ -35,11 +35,11 @@ class ProductNutritionService extends BaseService
 			throw new \InvalidArgumentException('Product not found');
 		}
 
-		$isFood = !empty($payload['is_food']) ? 1 : 0;
-		$product->update(['is_food' => $isFood]);
+		$isFood = $this->NormalizeIsFood($payload['is_food'] ?? null) ? 1 : 0;
 
 		if ($isFood === 0)
 		{
+			$product->update(['is_food' => $isFood]);
 			return $this->GetNutrition($productId);
 		}
 
@@ -59,6 +59,9 @@ class ProductNutritionService extends BaseService
 			'fat' => $this->NullableFloat($payload, 'fat'),
 			'carbohydrates' => $this->NullableFloat($payload, 'carbohydrates')
 		];
+		$stockToBasisFactor = $this->NormalizeStockToBasisFactor((int)$product->qu_id_stock, $basisQuId, $payload);
+
+		$product->update(['is_food' => $isFood]);
 
 		$existing = $this->DB->product_nutrition()->where('product_id', $productId)->fetch();
 		if ($existing === null)
@@ -70,9 +73,14 @@ class ProductNutritionService extends BaseService
 			$existing->update($values);
 		}
 
-		$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $payload);
+		$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $stockToBasisFactor);
 
 		return $this->GetNutrition($productId);
+	}
+
+	private function NormalizeIsFood($value)
+	{
+		return $value === true || $value === 1 || $value === '1';
 	}
 
 	private function NullableFloat(array $payload, string $key)
@@ -85,17 +93,27 @@ class ProductNutritionService extends BaseService
 		return (float)$payload[$key];
 	}
 
-	private function SaveStockToBasisConversion($productId, $stockQuId, $basisQuId, array $payload)
+	private function NormalizeStockToBasisFactor($stockQuId, $basisQuId, array $payload)
 	{
 		if ($stockQuId === $basisQuId || !array_key_exists('stock_to_basis_factor', $payload) || $payload['stock_to_basis_factor'] === '' || $payload['stock_to_basis_factor'] === null)
 		{
-			return;
+			return null;
 		}
 
 		$factor = (float)$payload['stock_to_basis_factor'];
 		if ($factor <= 0)
 		{
 			throw new \InvalidArgumentException('Stock to nutrition basis conversion factor must be positive');
+		}
+
+		return $factor;
+	}
+
+	private function SaveStockToBasisConversion($productId, $stockQuId, $basisQuId, $factor)
+	{
+		if ($stockQuId === $basisQuId || $factor === null)
+		{
+			return;
 		}
 
 		$values = [

@@ -60,6 +60,7 @@ class ProductNutritionService extends BaseService
 			'carbohydrates' => $this->NullableFloat($payload, 'carbohydrates')
 		];
 		$stockToBasisFactor = $this->NormalizeStockToBasisFactor((int)$product->qu_id_stock, $basisQuId, $payload);
+		$stockToBasisFactorProvided = array_key_exists('stock_to_basis_factor', $payload);
 
 		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
 		$pdo->beginTransaction();
@@ -77,7 +78,7 @@ class ProductNutritionService extends BaseService
 				$existing->update($values);
 			}
 
-			$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $stockToBasisFactor);
+			$this->SaveStockToBasisConversion($productId, (int)$product->qu_id_stock, $basisQuId, $stockToBasisFactor, $stockToBasisFactorProvided);
 			$pdo->commit();
 		}
 		catch (\Throwable $ex)
@@ -144,10 +145,20 @@ class ProductNutritionService extends BaseService
 		return $factor;
 	}
 
-	private function SaveStockToBasisConversion($productId, $stockQuId, $basisQuId, $factor)
+	private function SaveStockToBasisConversion($productId, $stockQuId, $basisQuId, $factor, $factorProvided)
 	{
-		if ($stockQuId === $basisQuId || $factor === null)
+		if ($stockQuId === $basisQuId)
 		{
+			return;
+		}
+
+		if ($factor === null)
+		{
+			if ($factorProvided)
+			{
+				$this->DB->quantity_unit_conversions()->where('product_id = :1 AND from_qu_id = :2 AND to_qu_id = :3', $productId, $stockQuId, $basisQuId)->delete();
+			}
+
 			return;
 		}
 

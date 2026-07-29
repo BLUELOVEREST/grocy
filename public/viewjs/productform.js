@@ -84,36 +84,186 @@ function saveProductPropertyMetadata(productId, jsonData, success, error)
 	Grocy.Api.Put('product-property-templates/' + productId, { definitions: collectProductPropertyTemplateDefinitions() }, success, error);
 }
 
+function collectFoodNutritionPayload()
+{
+	return {
+		is_food: $('#is_food').prop('checked'),
+		basis_amount: $('#nutrition_basis_amount').val(),
+		basis_qu_id: $('#nutrition_basis_qu_id').val(),
+		calories: $('#nutrition_calories').val(),
+		protein: $('#nutrition_protein').val(),
+		fat: $('#nutrition_fat').val(),
+		carbohydrates: $('#nutrition_carbohydrates').val(),
+		stock_to_basis_factor: $('#stock_to_basis_factor').val()
+	};
+}
+
+function saveFoodNutrition(productId, success, error)
+{
+	Grocy.Api.Put('food-nutrition/' + productId, collectFoodNutritionPayload(), success, error);
+}
+
 function saveProductPicture(result, location, jsonData)
 {
 	var productId = Grocy.EditObjectId || result.created_object_id;
 	Grocy.EditObjectId = productId; // Grocy.EditObjectId is not yet set when adding a product
 
-	saveProductPropertyMetadata(productId, jsonData, function()
+	saveFoodNutrition(productId, function()
 	{
-		Grocy.Components.UserfieldsForm.Save(() =>
+		saveProductPropertyMetadata(productId, jsonData, function()
 		{
-			if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
+			Grocy.Components.UserfieldsForm.Save(() =>
 			{
-				Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
-					() => redirectAfterProductSave(productId, location),
-					(xhr) =>
-					{
-						Grocy.FrontendHelpers.EndUiBusy("product-form");
-						Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
-					}
-				);
-			}
-			else
-			{
-				redirectAfterProductSave(productId, location);
-			}
+				if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
+				{
+					Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
+						() => redirectAfterProductSave(productId, location),
+						(xhr) =>
+						{
+							Grocy.FrontendHelpers.EndUiBusy("product-form");
+							Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
+						}
+					);
+				}
+				else
+				{
+					redirectAfterProductSave(productId, location);
+				}
+			});
+		}, function(xhr)
+		{
+			Grocy.FrontendHelpers.EndUiBusy("product-form");
+			Grocy.FrontendHelpers.ShowGenericError('Error while saving product properties', xhr.response);
 		});
 	}, function(xhr)
 	{
 		Grocy.FrontendHelpers.EndUiBusy("product-form");
-		Grocy.FrontendHelpers.ShowGenericError('Error while saving product properties', xhr.response);
+		Grocy.FrontendHelpers.ShowGenericError('Error while saving food nutrition', xhr.response);
 	});
+}
+
+function removeFoodNutritionFieldsFromProductData(jsonData)
+{
+	[
+		'protein',
+		'fat',
+		'carbohydrates',
+		'nutrition_basis_amount',
+		'nutrition_basis_qu_id',
+		'nutrition_calories',
+		'nutrition_protein',
+		'nutrition_fat',
+		'nutrition_carbohydrates',
+		'stock_to_basis_factor'
+	].forEach(function(field)
+	{
+		if (jsonData.hasOwnProperty(field))
+		{
+			delete jsonData[field];
+		}
+	});
+}
+
+function populateFoodNutritionFields(result, fallbackProduct)
+{
+	fallbackProduct = fallbackProduct || {};
+	$('#is_food').prop('checked', BoolVal(result.is_food));
+
+	if (result.nutrition != null)
+	{
+		$('#nutrition_basis_amount').val(result.nutrition.basis_amount);
+		$('#nutrition_basis_qu_id').val(result.nutrition.basis_qu_id);
+		$('#nutrition_calories').val(result.nutrition.calories);
+		$('#nutrition_protein').val(result.nutrition.protein);
+		$('#nutrition_fat').val(result.nutrition.fat);
+		$('#nutrition_carbohydrates').val(result.nutrition.carbohydrates);
+	}
+	else
+	{
+		if (fallbackProduct.calories != null)
+		{
+			$('#nutrition_calories').val(fallbackProduct.calories);
+		}
+		if (fallbackProduct.protein != null)
+		{
+			$('#nutrition_protein').val(fallbackProduct.protein);
+		}
+		if (fallbackProduct.fat != null)
+		{
+			$('#nutrition_fat').val(fallbackProduct.fat);
+		}
+		if (fallbackProduct.carbohydrates != null)
+		{
+			$('#nutrition_carbohydrates').val(fallbackProduct.carbohydrates);
+		}
+	}
+
+	if (result.stock_to_basis_conversion != null)
+	{
+		$('#stock_to_basis_factor').val(result.stock_to_basis_conversion.factor);
+	}
+
+	refreshNutritionFieldsVisibility();
+	Grocy.FrontendHelpers.ValidateForm('product-form');
+}
+
+function loadFoodNutrition(productId, fallbackProduct)
+{
+	Grocy.Api.Get('food-nutrition/' + productId, function(result)
+	{
+		populateFoodNutritionFields(result, fallbackProduct);
+	}, function(xhr)
+	{
+		if (fallbackProduct !== undefined)
+		{
+			populateFoodNutritionFields({ is_food: fallbackProduct.is_food, nutrition: null, stock_to_basis_conversion: null }, fallbackProduct);
+			return;
+		}
+
+		console.error(xhr);
+	});
+}
+
+function selectedQuantityUnitText(selector)
+{
+	var selectedOption = $(selector + ' option:selected');
+	return selectedOption.val() ? selectedOption.text() : '';
+}
+
+function refreshNutritionUnitLabels()
+{
+	var basisAmount = $('#nutrition_basis_amount').val();
+	var basisUnit = selectedQuantityUnitText('#nutrition_basis_qu_id');
+	var stockUnit = selectedQuantityUnitText('#qu_id_stock');
+
+	$('#nutrition-basis-description').text((basisAmount || '?') + ' ' + (basisUnit || '?'));
+	$('#nutrition_energy_qu_info').text(Grocy.EnergyUnit);
+	$('#nutrition_protein_qu_info').text('g');
+	$('#nutrition_fat_qu_info').text('g');
+	$('#nutrition_carbohydrates_qu_info').text('g');
+	$('#stock_to_basis_factor_qu_info').text(basisUnit && stockUnit ? basisUnit + ' / ' + stockUnit : '');
+	$('#stock-to-basis-stock-unit').text(stockUnit);
+	$('#stock-to-basis-factor-label').text($('#stock_to_basis_factor').val() || '?');
+	$('#stock-to-basis-basis-unit').text(basisUnit);
+}
+
+function refreshNutritionFieldsVisibility()
+{
+	var isFood = $('#is_food').prop('checked');
+	var stockQuId = $('#qu_id_stock').val();
+	var basisQuId = $('#nutrition_basis_qu_id').val();
+	var showStockToBasisConversion = isFood && stockQuId && basisQuId && stockQuId != basisQuId;
+
+	$('#product-nutrition-fields').toggleClass('d-none', !isFood);
+	$('#stock-to-basis-conversion-fields').toggleClass('d-none', !showStockToBasisConversion);
+	$('#nutrition_basis_amount, #nutrition_basis_qu_id').prop('required', isFood);
+	refreshNutritionUnitLabels();
+}
+
+function refreshNutritionFormState()
+{
+	refreshNutritionFieldsVisibility();
+	Grocy.FrontendHelpers.ValidateForm('product-form');
 }
 
 
@@ -128,6 +278,7 @@ $('.save-product-button').on('click', function(e)
 
 	var jsonData = $('#product-form').serializeJSON();
 	jsonData.is_food = $("#is_food").prop("checked") ? "1" : "0";
+	removeFoodNutritionFieldsFromProductData(jsonData);
 	var parentProductId = jsonData.product_id;
 	delete jsonData.product_id;
 	jsonData.parent_product_id = parentProductId;
@@ -195,26 +346,29 @@ $('.input-group-qu').on('change', function(e)
 	$("#tare_weight_qu_info").text($("#qu_id_stock option:selected").text());
 	$("#quick_consume_qu_info").text($("#qu_id_stock option:selected").text());
 	$("#quick_open_qu_info").text($("#qu_id_stock option:selected").text());
-	$("#energy_qu_info").text(Grocy.EnergyUnit + " / " + $("#qu_id_stock option:selected").text());
-	$("#protein_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
-	$("#fat_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
-	$("#carbohydrates_qu_info").text("g / " + $("#qu_id_stock option:selected").text());
+	refreshNutritionFieldsVisibility();
 
 	Grocy.FrontendHelpers.ValidateForm('product-form');
 });
 
-
-function refreshNutritionFieldsVisibility()
-{
-	$("#product-nutrition-fields").toggleClass("d-none", !$("#is_food").prop("checked"));
-}
-
 $("#is_food").on("change", function()
 {
-	refreshNutritionFieldsVisibility();
+	refreshNutritionFormState();
 });
 
-refreshNutritionFieldsVisibility();
+$("#nutrition_basis_amount, #nutrition_basis_qu_id, #stock_to_basis_factor").on("change keyup", function()
+{
+	refreshNutritionFormState();
+});
+
+if (Grocy.EditMode === 'edit')
+{
+	loadFoodNutrition(Grocy.EditObjectId);
+}
+else
+{
+	refreshNutritionFieldsVisibility();
+}
 
 $('#product-form input').keyup(function(event)
 {
@@ -674,23 +828,7 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 			{
 				$("#is_food").prop("checked", true);
 			}
-			if (sourceProduct.calories != null)
-			{
-				$("#calories").val(sourceProduct.calories);
-			}
-			if (sourceProduct.protein != null)
-			{
-				$("#protein").val(sourceProduct.protein);
-			}
-			if (sourceProduct.fat != null)
-			{
-				$("#fat").val(sourceProduct.fat);
-			}
-			if (sourceProduct.carbohydrates != null)
-			{
-				$("#carbohydrates").val(sourceProduct.carbohydrates);
-			}
-			refreshNutritionFieldsVisibility();
+			loadFoodNutrition(GetUriParam("copy-of"), sourceProduct);
 			$("#default_best_before_days_after_freezing").val(sourceProduct.default_best_before_days_after_freezing);
 			$("#default_best_before_days_after_thawing").val(sourceProduct.default_best_before_days_after_thawing);
 			$("#quick_consume_amount").val(sourceProduct.quick_consume_amount);

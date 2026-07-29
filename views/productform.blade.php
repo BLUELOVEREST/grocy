@@ -516,57 +516,111 @@
 			</div>
 
 			<div id="product-nutrition-fields">
-				@php if($mode == 'edit') { $value = $product->calories; } else { $value = 0; } @endphp
+				<h4>{{ $__t('Food nutrition') }}</h4>
+				<p class="text-muted small">
+					{{ $__t('Nutrition basis') }}:
+					<span id="nutrition-basis-description"></span>
+					{{ $__t('means nutrition values are per the selected amount and unit') }}.
+				</p>
+
+				@php $value = 100; @endphp
 				@include('components.numberpicker', array(
-				'id' => 'calories',
+				'id' => 'nutrition_basis_amount',
+				'label' => 'Nutrition basis amount',
+				'min' => $DEFAULT_MIN_AMOUNT,
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => $value,
+				'isRequired' => false,
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
+				))
+
+				<div class="form-group">
+					<label for="nutrition_basis_qu_id">{{ $__t('Nutrition basis quantity unit') }}</label>
+					<select class="custom-control custom-select food-nutrition-input"
+						id="nutrition_basis_qu_id">
+						<option></option>
+						@foreach($quantityunitsAll as $qu)
+						<option value="{{ $qu->id }}">{{ $qu->name }}</option>
+						@endforeach
+					</select>
+					<div class="invalid-feedback">{{ $__t('A quantity unit is required') }}</div>
+				</div>
+
+				@include('components.numberpicker', array(
+				'id' => 'nutrition_calories',
 				'label' => 'Energy',
 				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
-				'value' => $value,
-				'hint' => $__t('Per stock quantity unit'),
-				'contextInfoId' => 'energy_qu_info',
+				'value' => 0,
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_energy_qu_info',
 				'isRequired' => false,
-				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
 				))
 
-				@php if($mode == 'edit') { $value = $product->protein; } else { $value = 0; } @endphp
 				@include('components.numberpicker', array(
-				'id' => 'protein',
+				'id' => 'nutrition_protein',
 				'label' => 'Protein',
 				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
-				'value' => $value,
-				'hint' => $__t('Per stock quantity unit'),
-				'contextInfoId' => 'protein_qu_info',
+				'value' => 0,
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_protein_qu_info',
 				'isRequired' => false,
-				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
 				))
 
-				@php if($mode == 'edit') { $value = $product->fat; } else { $value = 0; } @endphp
 				@include('components.numberpicker', array(
-				'id' => 'fat',
+				'id' => 'nutrition_fat',
 				'label' => 'Fat',
 				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
-				'value' => $value,
-				'hint' => $__t('Per stock quantity unit'),
-				'contextInfoId' => 'fat_qu_info',
+				'value' => 0,
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_fat_qu_info',
 				'isRequired' => false,
-				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
 				))
 
-				@php if($mode == 'edit') { $value = $product->carbohydrates; } else { $value = 0; } @endphp
 				@include('components.numberpicker', array(
-				'id' => 'carbohydrates',
+				'id' => 'nutrition_carbohydrates',
 				'label' => 'Carbohydrates',
 				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
-				'value' => $value,
-				'hint' => $__t('Per stock quantity unit'),
-				'contextInfoId' => 'carbohydrates_qu_info',
+				'value' => 0,
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_carbohydrates_qu_info',
 				'isRequired' => false,
-				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount'
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
 				))
+
+				<div id="stock-to-basis-conversion-fields">
+					@include('components.numberpicker', array(
+				'id' => 'stock_to_basis_factor',
+				'label' => 'Stock-to-basis conversion',
+				'min' => $DEFAULT_MIN_AMOUNT,
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => 1,
+				'hint' => $__t('Conversion from stock quantity unit to nutrition basis quantity unit'),
+				'contextInfoId' => 'stock_to_basis_factor_qu_info',
+				'isRequired' => false,
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
+				))
+					<p class="text-muted small mt-n2"
+						id="stock-to-basis-conversion-description">
+						{{ $__t('This means') }}
+						1 <span id="stock-to-basis-stock-unit"></span>
+						=
+						<span id="stock-to-basis-factor-label"></span>
+						<span id="stock-to-basis-basis-unit"></span>
+					</p>
+				</div>
 			</div>
 
 			@php if($mode == 'edit') { $value = $product->quick_consume_amount; } else { $value = 1; } @endphp

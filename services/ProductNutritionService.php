@@ -100,6 +100,12 @@ class ProductNutritionService extends BaseService
 		$pdo->beginTransaction();
 		try
 		{
+			$existingNutrition = $this->DB->product_nutrition()->where('product_id', $product->id)->fetch();
+			if ($existingNutrition !== null)
+			{
+				$this->DB->quantity_unit_conversions()->where('product_id = :1 AND from_qu_id = :2 AND to_qu_id = :3', $product->id, $product->qu_id_stock, $existingNutrition->basis_qu_id)->delete();
+			}
+
 			$product->update(['is_food' => $isFood]);
 			$pdo->commit();
 		}

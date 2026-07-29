@@ -248,7 +248,7 @@ $(".calendar").each(function()
 				var shoppingListButtonHtml = "";
 				if (Grocy.FeatureFlags.GROCY_FEATURE_FLAG_SHOPPINGLIST)
 				{
-					shoppingListButtonHtml = '<a class="btn btn-outline-primary btn-xs show-as-dialog-link ' + productOrderMissingButtonDisabledClasses + '" href="' + U("/shoppinglistitem/new?embedded&updateexistingproduct&list=1&product=") + mealPlanEntry.product_id + '&amount=' + mealPlanEntry.product_amount + '" data-toggle="tooltip" title="' + __t("Add to shopping list") + '" data-product-id="' + productDetails.product.id.toString() + '" data-product-name="' + productDetails.product.name + '" data-product-amount="' + mealPlanEntry.product_amount + '"><i class="fa-solid fa-cart-plus"></i></a>';
+					shoppingListButtonHtml = '<a class="btn btn-outline-primary btn-xs show-as-dialog-link ' + productOrderMissingButtonDisabledClasses + '" href="' + U("/shoppinglistitem/new?embedded&updateexistingproduct&product=") + mealPlanEntry.product_id + '&amount=' + mealPlanEntry.product_amount + '" data-toggle="tooltip" title="' + __t("Add to shopping list") + '" data-product-id="' + productDetails.product.id.toString() + '" data-product-name="' + productDetails.product.name + '" data-product-amount="' + mealPlanEntry.product_amount + '"><i class="fa-solid fa-cart-plus"></i></a>';
 				}
 
 				element.html('\
@@ -764,13 +764,14 @@ $(document).on('click', '.recipe-order-missing-button', function(e)
 		{
 			if (result === true)
 			{
-				Grocy.FrontendHelpers.BeginUiBusy();
-
-				// Set the recipes desired_servings so that the "recipes resolved"-views resolve correctly based on the meal plan entry servings
-				Grocy.Api.Put('objects/recipes/' + objectId, { "desired_servings": servings },
-					function(result)
-					{
-						Grocy.Api.Post('recipes/' + objectId + '/add-not-fulfilled-products-to-shoppinglist', {},
+				Grocy.FrontendHelpers.PromptForShoppingList(function(listId)
+				{
+					Grocy.FrontendHelpers.BeginUiBusy();
+					// Set desired servings only after the target list was explicitly selected.
+					Grocy.Api.Put('objects/recipes/' + objectId, { "desired_servings": servings },
+						function(result)
+						{
+						Grocy.Api.Post('recipes/' + objectId + '/add-not-fulfilled-products-to-shoppinglist', { "list_id": listId },
 							function(result)
 							{
 								if (button.attr("data-recipe-type") == "normal")
@@ -789,12 +790,14 @@ $(document).on('click', '.recipe-order-missing-button', function(e)
 								console.error(xhr);
 							}
 						);
-					},
-					function(xhr)
-					{
-						console.error(xhr);
-					}
-				);
+						},
+						function(xhr)
+						{
+							Grocy.FrontendHelpers.EndUiBusy();
+							console.error(xhr);
+						}
+					);
+				});
 			}
 		}
 	});

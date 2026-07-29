@@ -420,18 +420,27 @@ class StockController extends BaseController
 
 	public function ShoppingList(Request $request, Response $response, array $args)
 	{
-		$listId = 1;
-		if (isset($request->getQueryParams()['list']))
+		$listId = $request->getQueryParams()['list'] ?? null;
+		$shoppingLists = $this->DB->shopping_lists_view()->orderBy('name', 'COLLATE NOCASE');
+		if ($listId === null || filter_var($listId, FILTER_VALIDATE_INT) === false || $this->DB->shopping_lists($listId) === null)
 		{
-			$listId = $request->getQueryParams()['list'];
+			return $this->RenderPage($response, 'shoppinglists', [
+				'shoppingLists' => $shoppingLists
+			]);
+		}
+
+		$listItems = $this->DB->uihelper_shopping_list()->where('1 = 0');
+		if ($listId !== null && filter_var($listId, FILTER_VALIDATE_INT) !== false && $this->DB->shopping_lists($listId) !== null)
+		{
+			$listItems = $this->DB->uihelper_shopping_list()->where('shopping_list_id = :1', $listId)->orderBy('product_name', 'COLLATE NOCASE');
 		}
 
 		return $this->RenderPage($response, 'shoppinglist', [
-			'listItems' => $this->DB->uihelper_shopping_list()->where('shopping_list_id = :1', $listId)->orderBy('product_name', 'COLLATE NOCASE'),
+			'listItems' => $listItems,
 			'products' => $this->DB->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 			'quantityunits' => $this->DB->quantity_units()->orderBy('name', 'COLLATE NOCASE'),
 			'missingProducts' => StockService::GetInstance()->GetMissingProducts(),
-			'shoppingLists' => $this->DB->shopping_lists_view()->orderBy('name', 'COLLATE NOCASE'),
+			'shoppingLists' => $shoppingLists,
 			'selectedShoppingListId' => $listId,
 			'quantityUnitConversionsResolved' => $this->DB->cache__quantity_unit_conversions_resolved(),
 			'productUserfields' => UserfieldsService::GetInstance()->GetFields('products'),
@@ -466,10 +475,22 @@ class StockController extends BaseController
 	{
 		if ($args['itemId'] == 'new')
 		{
+			$selectedShoppingListId = $request->getQueryParams()['list'] ?? null;
+			if ($selectedShoppingListId !== null && (filter_var($selectedShoppingListId, FILTER_VALIDATE_INT) === false || $this->DB->shopping_lists($selectedShoppingListId) === null))
+			{
+				throw new HttpNotFoundException($request, 'Shopping list not found');
+			}
+			$shoppingLists = $this->DB->shopping_lists()->orderBy('name', 'COLLATE NOCASE');
+			if ($shoppingLists->count() === 0)
+			{
+				throw new HttpNotFoundException($request, 'Create a shopping list before adding items');
+			}
+
 			return $this->RenderPage($response, 'shoppinglistitemform', [
 				'products' => $this->DB->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 				'barcodes' => $this->DB->product_barcodes_comma_separated(),
-				'shoppingLists' => $this->DB->shopping_lists()->orderBy('name', 'COLLATE NOCASE'),
+				'shoppingLists' => $shoppingLists,
+				'selectedShoppingListId' => $selectedShoppingListId === null ? null : intval($selectedShoppingListId),
 				'mode' => 'create',
 				'quantityUnits' => $this->DB->quantity_units()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 				'quantityUnitConversionsResolved' => $this->DB->cache__quantity_unit_conversions_resolved(),
@@ -478,11 +499,18 @@ class StockController extends BaseController
 		}
 		else
 		{
+			$listItem = $this->DB->shopping_list($args['itemId']);
+			if ($listItem === null)
+			{
+				throw new HttpNotFoundException($request, 'Shopping list item not found');
+			}
+
 			return $this->RenderPage($response, 'shoppinglistitemform', [
-				'listItem' => $this->DB->shopping_list($args['itemId']),
+				'listItem' => $listItem,
 				'products' => $this->DB->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 				'barcodes' => $this->DB->product_barcodes_comma_separated(),
 				'shoppingLists' => $this->DB->shopping_lists()->orderBy('name', 'COLLATE NOCASE'),
+				'selectedShoppingListId' => intval($listItem->shopping_list_id),
 				'mode' => 'edit',
 				'quantityUnits' => $this->DB->quantity_units()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 				'quantityUnitConversionsResolved' => $this->DB->cache__quantity_unit_conversions_resolved(),

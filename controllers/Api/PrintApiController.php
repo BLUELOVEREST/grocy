@@ -18,11 +18,11 @@ class PrintApiController extends BaseApiController
 
 			$params = $request->getQueryParams();
 
-			$listId = 1;
-			if (isset($params['list']))
+			if (!isset($params['list']) || filter_var($params['list'], FILTER_VALIDATE_INT) === false || intval($params['list']) <= 0)
 			{
-				$listId = $params['list'];
+				throw new \Exception('A shopping list id is required');
 			}
+			$listId = intval($params['list']);
 
 			$printHeader = true;
 			if (isset($params['printHeader']))

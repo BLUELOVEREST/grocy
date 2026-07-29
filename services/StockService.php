@@ -18,7 +18,7 @@ class StockService extends BaseService
 	const TRANSACTION_TYPE_TRANSFER_FROM = 'transfer_from';
 	const TRANSACTION_TYPE_TRANSFER_TO = 'transfer_to';
 
-	public function AddMissingProductsToShoppingList($listId = 1)
+	public function AddMissingProductsToShoppingList($listId)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -31,7 +31,7 @@ class StockService extends BaseService
 			$product = $this->DB->products()->where('id', $missingProduct->id)->fetch();
 			$amountToAdd = round($missingProduct->amount_missing, 2);
 
-			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id', $missingProduct->id)->fetch();
+			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id = :1 AND shopping_list_id = :2', $missingProduct->id, $listId)->fetch();
 			if ($alreadyExistingEntry)
 			{
 				// Update
@@ -57,7 +57,7 @@ class StockService extends BaseService
 		}
 	}
 
-	public function AddOverdueProductsToShoppingList($listId = 1)
+	public function AddOverdueProductsToShoppingList($listId)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -69,7 +69,7 @@ class StockService extends BaseService
 		{
 			$product = $this->DB->products()->where('id', $overdueProduct->product_id)->fetch();
 
-			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id', $overdueProduct->product_id)->fetch();
+			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id = :1 AND shopping_list_id = :2', $overdueProduct->product_id, $listId)->fetch();
 			if (!$alreadyExistingEntry)
 			{
 				$shoppinglistRow = $this->DB->shopping_list()->createRow([
@@ -83,7 +83,7 @@ class StockService extends BaseService
 		}
 	}
 
-	public function AddExpiredProductsToShoppingList($listId = 1)
+	public function AddExpiredProductsToShoppingList($listId)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -95,7 +95,7 @@ class StockService extends BaseService
 		{
 			$product = $this->DB->products()->where('id', $expiredProduct->product_id)->fetch();
 
-			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id', $expiredProduct->product_id)->fetch();
+			$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id = :1 AND shopping_list_id = :2', $expiredProduct->product_id, $listId)->fetch();
 			if (!$alreadyExistingEntry)
 			{
 				$shoppinglistRow = $this->DB->shopping_list()->createRow([
@@ -304,7 +304,7 @@ class StockService extends BaseService
 		}
 	}
 
-	public function AddProductToShoppingList($productId, $amount = 1, $quId = -1, $note = null, $listId = 1)
+	public function AddProductToShoppingList($productId, $amount, $quId, $note, $listId, $dueDate = null, $dueDateProvided = false)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -316,6 +316,11 @@ class StockService extends BaseService
 			throw new \Exception('Product does not exist or is inactive');
 		}
 
+		if ($dueDateProvided)
+		{
+			$dueDate = $this->NormalizeShoppingListDueDate($dueDate);
+		}
+
 		if ($quId == -1)
 		{
 			$quId = $this->DB->products($productId)->qu_id_purchase;
@@ -325,11 +330,16 @@ class StockService extends BaseService
 		if ($alreadyExistingEntry)
 		{
 			// Update
-			$alreadyExistingEntry->update([
+			$updateData = [
 				'amount' => ($alreadyExistingEntry->amount + $amount),
 				'shopping_list_id' => $listId,
 				'note' => $note
-			]);
+			];
+			if ($dueDateProvided)
+			{
+				$updateData['due_date'] = $dueDate;
+			}
+			$alreadyExistingEntry->update($updateData);
 		}
 		else
 		{
@@ -339,13 +349,14 @@ class StockService extends BaseService
 				'amount' => $amount,
 				'qu_id' => $quId,
 				'shopping_list_id' => $listId,
-				'note' => $note
+				'note' => $note,
+				'due_date' => $dueDate
 			]);
 			$shoppinglistRow->save();
 		}
 	}
 
-	public function AddFreeTextItemToShoppingList($freeTextName, $amount = 1, $quId = null, $note = null, $listId = 1)
+	public function AddFreeTextItemToShoppingList($freeTextName, $amount, $quId, $note, $listId, $dueDate = null)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -380,6 +391,8 @@ class StockService extends BaseService
 			$quId = null;
 		}
 
+		$dueDate = $this->NormalizeShoppingListDueDate($dueDate);
+
 		$shoppinglistRow = $this->DB->shopping_list()->createRow([
 			'free_text_name' => $freeTextName,
 			'product_id' => null,
@@ -387,6 +400,7 @@ class StockService extends BaseService
 			'qu_id' => $quId,
 			'shopping_list_id' => $listId,
 			'note' => $note,
+			'due_date' => $dueDate,
 			'done' => 0,
 			'completion_type' => null,
 			'stock_transaction_id' => null,
@@ -395,6 +409,37 @@ class StockService extends BaseService
 		$shoppinglistRow->save();
 
 		return $shoppinglistRow->id;
+	}
+
+	public function NormalizeShoppingListDueDate($dueDate): ?string
+	{
+		if ($dueDate === null || $dueDate === '')
+		{
+			return null;
+		}
+
+		if (!is_string($dueDate) || !IsIsoDate($dueDate))
+		{
+			throw new \Exception('Due date must use YYYY-MM-DD format');
+		}
+
+		return $dueDate;
+	}
+
+	public function AddMissingProductsToConfiguredShoppingList(): void
+	{
+		if (!boolval(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount')))
+		{
+			return;
+		}
+
+		$listId = UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount_list_id');
+		if (!is_numeric($listId) || !$this->ShoppingListExists(intval($listId)))
+		{
+			return;
+		}
+
+		$this->AddMissingProductsToShoppingList(intval($listId));
 	}
 
 	public function CompleteShoppingListItemWithoutStock($shoppingListItemId)
@@ -469,7 +514,7 @@ class StockService extends BaseService
 		return $transactionId;
 	}
 
-	public function ClearShoppingList($listId = 1, $doneOnly = false)
+	public function ClearShoppingList($listId, $doneOnly = false)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
@@ -636,10 +681,7 @@ class StockService extends BaseService
 				}
 			}
 
-			if (boolval(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount')))
-			{
-				$this->AddMissingProductsToShoppingList(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount_list_id'));
-			}
+			$this->AddMissingProductsToConfiguredShoppingList();
 
 			return $transactionId;
 		}
@@ -1271,22 +1313,19 @@ class StockService extends BaseService
 			}
 		}
 
-		if (boolval(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount')))
-		{
-			$this->AddMissingProductsToShoppingList(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount_list_id'));
-		}
+		$this->AddMissingProductsToConfiguredShoppingList();
 
 		return $transactionId;
 	}
 
-	public function RemoveProductFromShoppingList($productId, $amount = 1, $listId = 1)
+	public function RemoveProductFromShoppingList($productId, $amount, $listId)
 	{
 		if (!$this->ShoppingListExists($listId))
 		{
 			throw new \Exception('Shopping list does not exist');
 		}
 
-		$productRow = $this->DB->shopping_list()->where('product_id = :1', $productId)->fetch();
+		$productRow = $this->DB->shopping_list()->where('product_id = :1 AND shopping_list_id = :2', $productId, $listId)->fetch();
 
 		// If no entry was found with for this product, we return gracefully
 		if ($productRow != null && !empty($productRow))
@@ -1305,7 +1344,7 @@ class StockService extends BaseService
 		}
 	}
 
-	public function GetShoppinglistInPrintableStrings($listId = 1): array
+	public function GetShoppinglistInPrintableStrings($listId): array
 	{
 		if (!$this->ShoppingListExists($listId))
 		{

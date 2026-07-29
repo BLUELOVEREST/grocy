@@ -357,6 +357,38 @@ toastr.options = {
 };
 
 Grocy.FrontendHelpers = {};
+
+Grocy.FrontendHelpers.PromptForShoppingList = function(callback, cancelCallback)
+{
+	Grocy.Api.Get('objects/shopping_lists', function(lists)
+	{
+		if (!lists.length)
+		{
+			bootbox.alert(__t('Create a shopping list before adding items.'));
+			if (cancelCallback) cancelCallback();
+			return;
+		}
+
+		var options = lists.map(function(list)
+		{
+			return { text: list.name, value: list.id };
+		});
+		bootbox.prompt({
+			title: __t('Select a shopping list'),
+			inputType: 'select',
+			inputOptions: options,
+			callback: function(listId)
+			{
+				if (listId !== null) callback(parseInt(listId));
+				else if (cancelCallback) cancelCallback();
+			}
+		});
+	}, function(xhr)
+	{
+		console.error(xhr);
+		if (cancelCallback) cancelCallback();
+	});
+};
 Grocy.FrontendHelpers.ValidateForm = function (formId, reportValidity = false)
 {
 	var form = document.getElementById(formId);

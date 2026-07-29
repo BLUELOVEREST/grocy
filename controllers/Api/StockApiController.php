@@ -20,12 +20,7 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
-
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 
 			StockService::GetInstance()->AddMissingProductsToShoppingList($listId);
 			return $this->EmptyApiResponse($response);
@@ -44,11 +39,7 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 
 			StockService::GetInstance()->AddOverdueProductsToShoppingList($listId);
 			return $this->EmptyApiResponse($response);
@@ -67,11 +58,7 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 
 			StockService::GetInstance()->AddExpiredProductsToShoppingList($listId);
 			return $this->EmptyApiResponse($response);
@@ -180,16 +167,12 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 			$amount = 1;
 			$quId = -1;
 			$productId = null;
 			$note = null;
-
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$dueDate = null;
 
 			if (array_key_exists('product_amount', $requestBody) && !empty($requestBody['product_amount']) && is_numeric($requestBody['product_amount']))
 			{
@@ -211,12 +194,17 @@ class StockApiController extends BaseApiController
 				$quId = $requestBody['qu_id'];
 			}
 
+			if (array_key_exists('due_date', $requestBody))
+			{
+				$dueDate = $requestBody['due_date'];
+			}
+
 			if ($productId == null)
 			{
 				throw new \Exception('No product id was supplied');
 			}
 
-			StockService::GetInstance()->AddProductToShoppingList($productId, $amount, $quId, $note, $listId);
+			StockService::GetInstance()->AddProductToShoppingList($productId, $amount, $quId, $note, $listId, $dueDate, array_key_exists('due_date', $requestBody));
 			return $this->EmptyApiResponse($response);
 		}
 		catch (\Exception $ex)
@@ -242,11 +230,7 @@ class StockApiController extends BaseApiController
 				throw new \Exception('A shopping list item name is required');
 			}
 
-			$listId = 1;
-			if (array_key_exists('list_id', $requestBody) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 
 			$amount = 1;
 			if (array_key_exists('amount', $requestBody) && is_numeric($requestBody['amount']))
@@ -266,7 +250,13 @@ class StockApiController extends BaseApiController
 				$note = $requestBody['note'];
 			}
 
-			$newItemId = StockService::GetInstance()->AddFreeTextItemToShoppingList($requestBody['free_text_name'], $amount, $quId, $note, $listId);
+			$dueDate = null;
+			if (array_key_exists('due_date', $requestBody))
+			{
+				$dueDate = $requestBody['due_date'];
+			}
+
+			$newItemId = StockService::GetInstance()->AddFreeTextItemToShoppingList($requestBody['free_text_name'], $amount, $quId, $note, $listId, $dueDate);
 			return $this->ApiResponse($response, [
 				'created_object_id' => $newItemId
 			]);
@@ -370,11 +360,7 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 
 			$doneOnly = false;
 			if (array_key_exists('done_only', $requestBody) && filter_var($requestBody['done_only'], FILTER_VALIDATE_BOOLEAN) !== false)
@@ -869,14 +855,9 @@ class StockApiController extends BaseApiController
 		{
 			$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 
-			$listId = 1;
+			$listId = $this->GetRequiredShoppingListId($requestBody);
 			$amount = 1;
 			$productId = null;
-
-			if (array_key_exists('list_id', $requestBody) && !empty($requestBody['list_id']) && is_numeric($requestBody['list_id']))
-			{
-				$listId = $requestBody['list_id'];
-			}
 
 			if (array_key_exists('product_amount', $requestBody) && !empty($requestBody['product_amount']) && is_numeric($requestBody['product_amount']))
 			{
@@ -1062,5 +1043,15 @@ class StockApiController extends BaseApiController
 		{
 			return $this->GenericErrorResponse($response, $ex->getMessage());
 		}
+	}
+
+	private function GetRequiredShoppingListId(?array $requestBody): int
+	{
+		if ($requestBody === null || !array_key_exists('list_id', $requestBody) || filter_var($requestBody['list_id'], FILTER_VALIDATE_INT) === false || intval($requestBody['list_id']) <= 0)
+		{
+			throw new \Exception('A shopping list id is required');
+		}
+
+		return intval($requestBody['list_id']);
 	}
 }

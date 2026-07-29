@@ -49,7 +49,6 @@
 			</div>
 			<div class="related-links collapse d-md-flex order-2 width-xs-sm-100"
 				id="related-links">
-				@if(GROCY_FEATURE_FLAG_SHOPPINGLIST_MULTIPLE_LISTS)
 				<div class="my-auto float-right">
 					<select class="custom-control custom-select bg-light font-weight-bold mt-md-0 mt-1"
 						id="selected-shopping-list">
@@ -74,7 +73,7 @@
 							{{ $__t('Edit shopping list') }}
 						</a>
 						<a id="delete-selected-shopping-list"
-							class="dropdown-item text-danger @if($selectedShoppingListId == 1) disabled text-muted @endif"
+							class="dropdown-item text-danger"
 							href="#">
 							{{ $__t('Delete shopping list') }}
 						</a>
@@ -86,12 +85,6 @@
 						</a>
 					</div>
 				</div>
-				@else
-				<input type="hidden"
-					name="selected-shopping-list"
-					id="selected-shopping-list"
-					value="1">
-				@endif
 			</div>
 		</div>
 		<div id="filter-container"
@@ -263,6 +256,16 @@
 					<td class="productcard-trigger cursor-link"
 						data-product-id="{{ $listItem->product_id }}">
 						@if(!empty($listItem->product_id)) {{ $listItem->product_name }}<br>@elseif(!empty($listItem->free_text_name)) <strong>{{ $listItem->free_text_name }}</strong><br>@endif<em>{!! nl2br($listItem->note ?? '') !!}</em>
+						@if(!empty($listItem->due_date))
+							@php
+								$today = date('Y-m-d');
+								$tomorrow = date('Y-m-d', strtotime('+1 day'));
+							@endphp
+							<br><small class="@if($listItem->due_date <= $today) text-danger font-weight-bold @elseif($listItem->due_date == $tomorrow) text-warning font-weight-bold @else text-muted @endif">
+								<i class="fa-solid fa-calendar-day"></i>
+								@if($listItem->due_date < $today){{ $__t('Overdue') }}@elseif($listItem->due_date == $today){{ $__t('Today') }}@elseif($listItem->due_date == $tomorrow){{ $__t('Tomorrow') }}@else{{ $listItem->due_date }}@endif
+							</small>
+						@endif
 					</td>
 					@if(!empty($listItem->product_id))
 					@php

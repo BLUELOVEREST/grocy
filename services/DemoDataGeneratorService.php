@@ -139,12 +139,6 @@ class DemoDataGeneratorService extends BaseService
 			');
 
 			$db->ExecuteDbStatement("
-				INSERT INTO shopping_list (note, amount) VALUES ('{$this->__t_sql('Some good snacks')}', 1);
-				INSERT INTO shopping_list (product_id, amount) VALUES (20, 1);
-				INSERT INTO shopping_list (product_id, amount) VALUES (17, 1);
-			");
-
-			$db->ExecuteDbStatement("
 				INSERT INTO recipes (name, description, picture_file_name) VALUES ('{$this->__t_sql('Pizza')}', '{$loremIpsumWithHtmlFormattings}', 'pizza.jpg'); --1
 				INSERT INTO recipes (name, description, picture_file_name) VALUES ('{$this->__t_sql('Spaghetti bolognese')}', '{$loremIpsumWithHtmlFormattings}', 'spaghetti.jpg'); --2
 				INSERT INTO recipes (name, description, picture_file_name) VALUES ('{$this->__t_sql('Sandwiches')}', '{$loremIpsumWithHtmlFormattings}', 'sandwiches.jpg'); --3
@@ -352,7 +346,7 @@ class DemoDataGeneratorService extends BaseService
 			$stockService->AddProduct(1, 12, date('Y-m-d', strtotime('+180 days')), StockService::TRANSACTION_TYPE_PURCHASE, date('Y-m-d', strtotime('-1 days')), $this->RandomPrice(), null, $this->NextSupermarketId(), $stockTransactionId);
 			$stockService->AddProduct(2, 12, date('Y-m-d', strtotime('+365 days')), StockService::TRANSACTION_TYPE_PURCHASE, date('Y-m-d', strtotime('-1 days')), $this->RandomPrice(), null, $this->NextSupermarketId(), $stockTransactionId);
 
-			$stockService->AddMissingProductsToShoppingList();
+			// Shopping lists are intentionally user-created; demo data must not assume list ID 1.
 			$stockService->OpenProduct(3, 1);
 			$stockService->OpenProduct(6, 1);
 			$stockService->OpenProduct(22, 1);

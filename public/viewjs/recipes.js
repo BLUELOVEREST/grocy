@@ -208,15 +208,16 @@ $(document).on('click', '.recipe-shopping-list', function(e)
 		{
 			if (result === true)
 			{
-				Grocy.FrontendHelpers.BeginUiBusy();
-
 				var excludedProductIds = new Array();
 				$(".missing-recipe-pos-product-checkbox:checkbox:not(:checked)").each(function()
 				{
 					excludedProductIds.push($(this).data("product-id"));
 				});
 
-				Grocy.Api.Post('recipes/' + objectId + '/add-not-fulfilled-products-to-shoppinglist', { "excludedProductIds": excludedProductIds },
+				Grocy.FrontendHelpers.PromptForShoppingList(function(listId)
+				{
+				Grocy.FrontendHelpers.BeginUiBusy();
+				Grocy.Api.Post('recipes/' + objectId + '/add-not-fulfilled-products-to-shoppinglist', { "list_id": listId, "excludedProductIds": excludedProductIds },
 					function(result)
 					{
 						window.location.reload();
@@ -227,6 +228,7 @@ $(document).on('click', '.recipe-shopping-list', function(e)
 						console.error(xhr);
 					}
 				);
+				});
 			}
 		}
 	});

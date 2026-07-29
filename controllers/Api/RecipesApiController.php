@@ -17,13 +17,25 @@ class RecipesApiController extends BaseApiController
 
 		$requestBody = $this->GetParsedAndFilteredRequestBody($request);
 		$excludedProductIds = null;
+		if ($requestBody === null || !array_key_exists('list_id', $requestBody) || filter_var($requestBody['list_id'], FILTER_VALIDATE_INT) === false || intval($requestBody['list_id']) <= 0)
+		{
+			return $this->GenericErrorResponse($response, 'A shopping list id is required', 400);
+		}
+		$listId = intval($requestBody['list_id']);
 
 		if ($requestBody !== null && array_key_exists('excludedProductIds', $requestBody))
 		{
 			$excludedProductIds = $requestBody['excludedProductIds'];
 		}
 
-		RecipesService::GetInstance()->AddNotFulfilledProductsToShoppingList($args['recipeId'], $excludedProductIds);
+		try
+		{
+			RecipesService::GetInstance()->AddNotFulfilledProductsToShoppingList($args['recipeId'], $listId, $excludedProductIds);
+		}
+		catch (\Exception $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage());
+		}
 		return $this->EmptyApiResponse($response);
 	}
 

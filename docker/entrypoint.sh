@@ -12,4 +12,7 @@ fi
 
 chown -R www-data:www-data "${GROCY_DATAPATH}"
 
+# Run Grocy's idempotent migration service before Apache handles any request.
+php -r 'define("GROCY_DATAPATH", getenv("GROCY_DATAPATH")); require "/var/www/html/packages/autoload.php"; require GROCY_DATAPATH . "/config.php"; require "/var/www/html/config-dist.php"; Grocy\Services\DatabaseMigrationService::GetInstance()->MigrateDatabase();'
+
 exec "$@"

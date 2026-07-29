@@ -50,14 +50,16 @@ class GenericEntityApiController extends BaseApiController
 					throw new \Exception('Request body could not be parsed (probably invalid JSON format or missing/wrong Content-Type header)');
 				}
 
+				$requestBody = $this->ValidateShoppingListPayload($args['entity'], $requestBody, true);
+
 				$newRow = $this->DB->{$args['entity']}()->createRow($requestBody);
 				$newRow->save();
 				$newObjectId = $this->DB->lastInsertId();
 
 				// TODO: This should be better done somehow in StockService
-				if ($args['entity'] == 'products' && boolval(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount')))
+				if ($args['entity'] == 'products')
 				{
-					StockService::GetInstance()->AddMissingProductsToShoppingList(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount_list_id'));
+					StockService::GetInstance()->AddMissingProductsToConfiguredShoppingList();
 				}
 
 				return $this->ApiResponse($response, [
@@ -115,6 +117,11 @@ class GenericEntityApiController extends BaseApiController
 				return $this->GenericErrorResponse($response, 'Object not found', 400);
 			}
 
+			if ($args['entity'] === 'shopping_lists' && $this->DB->shopping_list()->where('shopping_list_id = :1', $args['objectId'])->count() > 0)
+			{
+				return $this->GenericErrorResponse($response, 'Cannot delete a non-empty shopping list', 409);
+			}
+
 			$row->delete();
 
 			return $this->EmptyApiResponse($response);
@@ -164,6 +171,8 @@ class GenericEntityApiController extends BaseApiController
 					throw new \Exception('Request body could not be parsed (probably invalid JSON format or missing/wrong Content-Type header)');
 				}
 
+				$requestBody = $this->ValidateShoppingListPayload($args['entity'], $requestBody);
+
 				$row = $this->DB->{$args['entity']}($args['objectId']);
 				if ($row == null)
 				{
@@ -173,9 +182,9 @@ class GenericEntityApiController extends BaseApiController
 				$row->update($requestBody);
 
 				// TODO: This should be better done somehow in StockService
-				if ($args['entity'] == 'products' && boolval(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount')))
+				if ($args['entity'] == 'products')
 				{
-					StockService::GetInstance()->AddMissingProductsToShoppingList(UsersService::GetInstance()->GetUserSetting(GROCY_USER_ID, 'shopping_list_auto_add_below_min_stock_amount_list_id'));
+					StockService::GetInstance()->AddMissingProductsToConfiguredShoppingList();
 				}
 
 				return $this->EmptyApiResponse($response);
@@ -189,6 +198,35 @@ class GenericEntityApiController extends BaseApiController
 		{
 			return $this->GenericErrorResponse($response, 'Entity does not exist or is not exposed');
 		}
+	}
+
+	private function ValidateShoppingListPayload(string $entity, array $requestBody, bool $isCreate = false): array
+	{
+		if ($entity !== 'shopping_list')
+		{
+			return $requestBody;
+		}
+
+		if ($isCreate && !array_key_exists('shopping_list_id', $requestBody))
+		{
+			throw new \Exception('A shopping list id is required');
+		}
+
+		if (array_key_exists('shopping_list_id', $requestBody))
+		{
+			$listId = filter_var($requestBody['shopping_list_id'], FILTER_VALIDATE_INT);
+			if ($listId === false || $listId <= 0 || $this->DB->shopping_lists($listId) === null)
+			{
+				throw new \Exception('Shopping list does not exist');
+			}
+		}
+
+		if (array_key_exists('due_date', $requestBody))
+		{
+			$requestBody['due_date'] = StockService::GetInstance()->NormalizeShoppingListDueDate($requestBody['due_date']);
+		}
+
+		return $requestBody;
 	}
 
 	public function GetObject(Request $request, Response $response, array $args)

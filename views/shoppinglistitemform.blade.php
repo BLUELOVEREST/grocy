@@ -35,24 +35,30 @@
 		<form id="shoppinglist-form"
 			novalidate>
 
-			@if(GROCY_FEATURE_FLAG_SHOPPINGLIST_MULTIPLE_LISTS)
+			@if($mode == 'create' && $selectedShoppingListId !== null)
+			<input type="hidden"
+				id="shopping_list_id"
+				name="shopping_list_id"
+				data-shopping-list-name="{{ FindObjectInArrayByPropertyValue($shoppingLists, 'id', $selectedShoppingListId)->name }}"
+				value="{{ $selectedShoppingListId }}">
+			<div class="form-group">
+				<label>{{ $__t('Shopping list') }}</label>
+				<input class="form-control" type="text" readonly
+					value="{{ FindObjectInArrayByPropertyValue($shoppingLists, 'id', $selectedShoppingListId)->name }}">
+			</div>
+			@else
 			<div class="form-group">
 				<label for="shopping_list_id">{{ $__t('Shopping list') }}</label>
 				<select class="custom-control custom-select"
 					id="shopping_list_id"
-					name="shopping_list_id">
+					name="shopping_list_id"
+					required>
+					@if($mode == 'create')<option value="" selected disabled>{{ $__t('Select a shopping list') }}</option>@endif
 					@foreach($shoppingLists as $shoppingList)
-					<option @if($mode=='edit'
-						&&
-						$shoppingList->id == $listItem->shopping_list_id) selected="selected" @endif value="{{ $shoppingList->id }}">{{ $shoppingList->name }}</option>
+					<option @if($shoppingList->id == $selectedShoppingListId) selected="selected" @endif value="{{ $shoppingList->id }}">{{ $shoppingList->name }}</option>
 					@endforeach
 				</select>
 			</div>
-			@else
-			<input type="hidden"
-				id="shopping_list_id"
-				name="shopping_list_id"
-				value="1">
 			@endif
 
 			<div class="form-group">
@@ -86,6 +92,21 @@
 			'allowZero' => true,
 			'isRequired' => false
 			))
+
+			<div class="form-group">
+				<label for="due_date">{{ $__t('Buy by') }}</label>
+				<input class="form-control"
+					type="date"
+					id="due_date"
+					name="due_date"
+					@if($mode == 'edit' && !empty($listItem->due_date)) value="{{ $listItem->due_date }}" @endif>
+				<div class="btn-group btn-group-sm mt-2" role="group">
+					<button type="button" class="btn btn-outline-secondary set-shopping-due-date" data-offset="0">{{ $__t('Today') }}</button>
+					<button type="button" class="btn btn-outline-secondary set-shopping-due-date" data-offset="1">{{ $__t('Tomorrow') }}</button>
+					<button type="button" class="btn btn-outline-secondary" id="set-shopping-due-weekend">{{ $__t('This weekend') }}</button>
+					<button type="button" class="btn btn-outline-secondary" id="clear-shopping-due-date">{{ $__t('Clear') }}</button>
+				</div>
+			</div>
 
 			<div class="form-group">
 				<label for="note">{{ $__t('Note') }}</label>

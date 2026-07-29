@@ -11,8 +11,13 @@ class RecipesService extends BaseService
 	const RECIPE_TYPE_MEALPLAN_SHADOW = 'mealplan-shadow'; // A recipe per meal plan recipe (for separated stock fulfillment checking) => name = YYYY-MM-DD#<meal_plan.id>
 	const RECIPE_TYPE_NORMAL = 'normal'; // Normal / manually created recipes
 
-	public function AddNotFulfilledProductsToShoppingList($recipeId, $excludedProductIds = null)
+	public function AddNotFulfilledProductsToShoppingList($recipeId, $listId, $excludedProductIds = null)
 	{
+		if ($this->DB->shopping_lists($listId) === null)
+		{
+			throw new \Exception('Shopping list does not exist');
+		}
+
 		$recipe = $this->DB->recipes($recipeId);
 		$recipePositions = $this->GetRecipesPosResolved();
 
@@ -54,7 +59,7 @@ class RecipesService extends BaseService
 
 				if ($toOrderAmount > 0)
 				{
-					$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id', $recipePosition->product_id)->fetch();
+					$alreadyExistingEntry = $this->DB->shopping_list()->where('product_id = :1 AND shopping_list_id = :2', $recipePosition->product_id, $listId)->fetch();
 					if ($alreadyExistingEntry)
 					{
 						// Update
@@ -68,7 +73,8 @@ class RecipesService extends BaseService
 						$shoppinglistRow = $this->DB->shopping_list()->createRow([
 							'product_id' => $recipePosition->product_id,
 							'amount' => $toOrderAmount,
-							'qu_id' => $quId
+							'qu_id' => $quId,
+							'shopping_list_id' => $listId
 						]);
 						$shoppinglistRow->save();
 					}

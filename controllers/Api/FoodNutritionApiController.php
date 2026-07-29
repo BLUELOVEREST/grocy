@@ -32,7 +32,7 @@ class FoodNutritionApiController extends BaseApiController
 
 			if (!is_array($payload))
 			{
-				$payload = [];
+				return $this->GenericErrorResponse($response, 'Invalid request body', 400);
 			}
 
 			return $this->ApiResponse($response, ProductNutritionService::GetInstance()->SaveNutrition($args['productId'], $payload));

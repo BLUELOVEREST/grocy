@@ -1,5 +1,6 @@
 CREATE TABLE product_nutrition (
-	product_id INTEGER NOT NULL PRIMARY KEY,
+	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	product_id INTEGER NOT NULL UNIQUE,
 	basis_amount REAL NOT NULL DEFAULT 100,
 	basis_qu_id INTEGER NOT NULL,
 	calories REAL,

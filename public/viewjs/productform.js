@@ -84,6 +84,19 @@ function saveProductPropertyMetadata(productId, jsonData, success, error)
 	Grocy.Api.Put('product-property-templates/' + productId, { definitions: collectProductPropertyTemplateDefinitions() }, success, error);
 }
 
+var foodNutritionLoadComplete = Grocy.EditMode !== 'edit' && !(Grocy.EditMode == 'create' && GetUriParam("copy-of") != undefined);
+
+function refreshFoodNutritionSaveState()
+{
+	$('.save-product-button').prop('disabled', !foodNutritionLoadComplete);
+}
+
+function setFoodNutritionLoadComplete(isComplete)
+{
+	foodNutritionLoadComplete = isComplete;
+	refreshFoodNutritionSaveState();
+}
+
 function collectFoodNutritionPayload()
 {
 	return {
@@ -94,7 +107,7 @@ function collectFoodNutritionPayload()
 		protein: $('#nutrition_protein').val(),
 		fat: $('#nutrition_fat').val(),
 		carbohydrates: $('#nutrition_carbohydrates').val(),
-		stock_to_basis_factor: $('#stock_to_basis_factor').val()
+		stock_to_basis_factor: $('#stock-to-basis-conversion-fields').hasClass('d-none') ? null : $('#stock_to_basis_factor').val()
 	};
 }
 
@@ -180,6 +193,14 @@ function populateFoodNutritionFields(result, fallbackProduct)
 	}
 	else
 	{
+		if (fallbackProduct.basis_amount != null)
+		{
+			$('#nutrition_basis_amount').val(fallbackProduct.basis_amount);
+		}
+		if (fallbackProduct.basis_qu_id != null)
+		{
+			$('#nutrition_basis_qu_id').val(fallbackProduct.basis_qu_id);
+		}
 		if (fallbackProduct.calories != null)
 		{
 			$('#nutrition_calories').val(fallbackProduct.calories);
@@ -209,18 +230,23 @@ function populateFoodNutritionFields(result, fallbackProduct)
 
 function loadFoodNutrition(productId, fallbackProduct)
 {
+	setFoodNutritionLoadComplete(false);
 	Grocy.Api.Get('food-nutrition/' + productId, function(result)
 	{
 		populateFoodNutritionFields(result, fallbackProduct);
+		setFoodNutritionLoadComplete(true);
 	}, function(xhr)
 	{
 		if (fallbackProduct !== undefined)
 		{
 			populateFoodNutritionFields({ is_food: fallbackProduct.is_food, nutrition: null, stock_to_basis_conversion: null }, fallbackProduct);
+			setFoodNutritionLoadComplete(true);
 			return;
 		}
 
+		Grocy.FrontendHelpers.ShowGenericError('Error while loading food nutrition; saving is disabled to prevent overwriting existing nutrition data', xhr.response);
 		console.error(xhr);
+		refreshFoodNutritionSaveState();
 	});
 }
 
@@ -270,6 +296,12 @@ function refreshNutritionFormState()
 $('.save-product-button').on('click', function(e)
 {
 	e.preventDefault();
+
+	if (!foodNutritionLoadComplete)
+	{
+		Grocy.FrontendHelpers.ShowGenericError('Food nutrition is still loading; please wait before saving', '');
+		return;
+	}
 
 	if (!Grocy.FrontendHelpers.ValidateForm("product-form", true))
 	{
@@ -356,14 +388,22 @@ $("#is_food").on("change", function()
 	refreshNutritionFormState();
 });
 
-$("#nutrition_basis_amount, #nutrition_basis_qu_id, #stock_to_basis_factor").on("change keyup", function()
+$("#nutrition_basis_amount, #stock_to_basis_factor").on("change keyup", function()
 {
 	refreshNutritionFormState();
 });
 
+$("#nutrition_basis_qu_id").on("change", function()
+{
+	$("#stock_to_basis_factor").val("");
+	refreshNutritionFormState();
+});
+
+refreshFoodNutritionSaveState();
+
 if (Grocy.EditMode === 'edit')
 {
-	loadFoodNutrition(Grocy.EditObjectId);
+	loadFoodNutrition(Grocy.EditObjectId, Grocy.ProductFoodNutritionFallback);
 }
 else
 {
@@ -754,6 +794,11 @@ $('#qu_id_stock').change(function(e)
 	var quIdConsume = $('#qu_id_consume');
 	var quIdPrice = $('#qu_id_price');
 
+	if (quIdStockBefore != quIdStock.val())
+	{
+		$("#stock_to_basis_factor").val("");
+	}
+
 	if (quIdPurchase[0].selectedIndex === 0 && quIdStock[0].selectedIndex !== 0 || quIdStockBefore == quIdPurchase.val())
 	{
 		quIdPurchase[0].selectedIndex = quIdStock[0].selectedIndex;
@@ -771,6 +816,7 @@ $('#qu_id_stock').change(function(e)
 
 	quIdStockBefore = quIdStock.val();
 
+	refreshNutritionFormState();
 	Grocy.FrontendHelpers.ValidateForm('product-form');
 });
 
@@ -828,7 +874,15 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 			{
 				$("#is_food").prop("checked", true);
 			}
-			loadFoodNutrition(GetUriParam("copy-of"), sourceProduct);
+			loadFoodNutrition(GetUriParam("copy-of"), {
+				is_food: sourceProduct.is_food,
+				basis_amount: 1,
+				basis_qu_id: sourceProduct.qu_id_stock,
+				calories: sourceProduct.calories,
+				protein: sourceProduct.protein,
+				fat: sourceProduct.fat,
+				carbohydrates: sourceProduct.carbohydrates
+			});
 			$("#default_best_before_days_after_freezing").val(sourceProduct.default_best_before_days_after_freezing);
 			$("#default_best_before_days_after_thawing").val(sourceProduct.default_best_before_days_after_thawing);
 			$("#quick_consume_amount").val(sourceProduct.quick_consume_amount);
@@ -860,6 +914,7 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 		},
 		function(xhr)
 		{
+			Grocy.FrontendHelpers.ShowGenericError('Error while loading source product; saving is disabled to prevent overwriting copied nutrition data', xhr.response);
 			console.error(xhr);
 		}
 	);

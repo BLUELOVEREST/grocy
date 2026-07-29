@@ -51,6 +51,15 @@
 		@if($mode == 'edit')
 		<script>
 			Grocy.EditObjectId = {{ $product->id }};
+			Grocy.ProductFoodNutritionFallback = {!! json_encode([
+				'is_food' => $product->is_food == 1,
+				'basis_amount' => 1,
+				'basis_qu_id' => $product->qu_id_stock,
+				'calories' => $product->calories,
+				'protein' => $product->protein,
+				'fat' => $product->fat,
+				'carbohydrates' => $product->carbohydrates
+			]) !!};
 		</script>
 
 		@if(!empty($product->picture_file_name))

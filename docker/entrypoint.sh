@@ -10,9 +10,10 @@ if [ ! -f "${GROCY_DATAPATH}/config.php" ]; then
 EOF
 fi
 
-chown -R www-data:www-data "${GROCY_DATAPATH}"
-
 # Run Grocy's idempotent migration service before Apache handles any request.
 php -r 'define("GROCY_DATAPATH", getenv("GROCY_DATAPATH")); require "/var/www/html/packages/autoload.php"; require GROCY_DATAPATH . "/config.php"; require "/var/www/html/config-dist.php"; Grocy\Services\DatabaseMigrationService::GetInstance()->MigrateDatabase();'
+
+# Migrations run as root and can create the database on a fresh bind mount.
+chown -R www-data:www-data "${GROCY_DATAPATH}"
 
 exec "$@"

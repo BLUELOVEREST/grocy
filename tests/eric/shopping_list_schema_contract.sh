@@ -30,5 +30,11 @@ if [ "$due_date_count" -ne 1 ]; then
 fi
 
 grep -Fq 'DatabaseMigrationService::GetInstance()->MigrateDatabase()' docker/entrypoint.sh
+migration_line="$(grep -n 'DatabaseMigrationService::GetInstance()->MigrateDatabase()' docker/entrypoint.sh | cut -d: -f1)"
+chown_line="$(grep -n 'chown -R www-data:www-data' docker/entrypoint.sh | cut -d: -f1)"
+if [ "$chown_line" -le "$migration_line" ]; then
+	echo 'Data ownership must be fixed after database migration' >&2
+	exit 1
+fi
 
 echo 'shopping list schema contract passed'

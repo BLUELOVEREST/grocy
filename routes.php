@@ -4,6 +4,7 @@ use Grocy\Controllers\Api\BatteriesApiController;
 use Grocy\Controllers\Api\CalendarApiController;
 use Grocy\Controllers\Api\ChoresApiController;
 use Grocy\Controllers\Api\FilesApiController;
+use Grocy\Controllers\Api\FoodNutritionApiController;
 use Grocy\Controllers\Api\GenericEntityApiController;
 use Grocy\Controllers\Api\OpenApiController;
 use Grocy\Controllers\Api\ProductPropertiesApiController;
@@ -198,6 +199,10 @@ $app->group('/api', function (RouteCollectorProxy $group)
 	$group->put('/product-property-templates/{parentProductId}', [ProductPropertiesApiController::class, 'SetTemplate']);
 	$group->get('/product-properties/{productId}', [ProductPropertiesApiController::class, 'GetProperties']);
 	$group->put('/product-properties/{productId}', [ProductPropertiesApiController::class, 'SetProperties']);
+
+	// Food nutrition
+	$group->get('/food-nutrition/{productId}', [FoodNutritionApiController::class, 'Get']);
+	$group->put('/food-nutrition/{productId}', [FoodNutritionApiController::class, 'Put']);
 
 	// Stock
 	$group->get('/stock', [StockApiController::class, 'CurrentStock']);

@@ -342,6 +342,14 @@ body.night-mode,
 	color: #d1d1d1 !important;
 }
 
+.night-mode .shopping-list-card-link {
+	color: #c1c1c1 !important;
+}
+
+.night-mode .shopping-list-card-link:hover {
+	color: #fff !important;
+}
+
 .night-mode .normal-message {
 	background-color: #2d3a8c;
 	color: #d1d1d1;

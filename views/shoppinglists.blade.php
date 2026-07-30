@@ -33,7 +33,7 @@
 	<div class="col-12 col-md-6 col-xl-4 mb-3">
 		<div class="card h-100 shopping-list-card">
 			<div class="card-body d-flex align-items-center">
-				<a class="stretched-link flex-grow-1 text-body"
+				<a class="stretched-link flex-grow-1 shopping-list-card-link"
 					href="{{ $U('/shoppinglist?list=' . $shoppingList->id) }}">
 					<h4 class="mb-1">{{ $shoppingList->name }}</h4>
 					<span class="text-muted">{{ $__n($shoppingList->item_count, '%s item', '%s items') }}</span>

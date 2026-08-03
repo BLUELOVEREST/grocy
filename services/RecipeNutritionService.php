@@ -6,6 +6,12 @@ class RecipeNutritionService extends BaseService
 {
 	public function GetRecipeNutrition($recipeId)
 	{
+		$recipeId = filter_var($recipeId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+		if ($recipeId === false)
+		{
+			throw new \InvalidArgumentException('Invalid recipe id');
+		}
+
 		$recipe = $this->DB->recipes($recipeId);
 		if ($recipe === null)
 		{
@@ -43,25 +49,45 @@ class RecipeNutritionService extends BaseService
 			$factor = $convertedAmount / $basisAmount;
 			foreach ($this->NutrientKeys() as $key)
 			{
-				$total[$key] += (float)($nutrition->{$key} ?? 0) * $factor;
+				if ($nutrition->{$key} === null)
+				{
+					$this->AddWarning($warnings, $recipePosition, $productId, 'Missing nutrient value', $key);
+					continue;
+				}
+
+				$total[$key] += (float)$nutrition->{$key} * $factor;
 			}
 		}
 
 		$perServing = null;
+		$perServingDenominator = null;
 		$baseServings = (float)$recipe->base_servings;
-		if ($baseServings > 0)
+		$desiredServings = (float)$recipe->desired_servings;
+		if ($desiredServings > 0)
 		{
+			$perServingDenominator = 'desired_servings';
 			$perServing = $this->EmptyNutrition();
 			foreach ($this->NutrientKeys() as $key)
 			{
-				$perServing[$key] = $total[$key] / $baseServings;
+				$perServing[$key] = $total[$key] / $desiredServings;
 			}
+		}
+		else
+		{
+			$warnings[] = [
+				'message' => 'Invalid recipe desired servings'
+			];
 		}
 
 		return [
-			'recipe_id' => (int)$recipeId,
+			'recipe_id' => $recipeId,
 			'total' => $total,
 			'per_serving' => $perServing,
+			'servings' => [
+				'base_servings' => $baseServings,
+				'desired_servings' => $desiredServings,
+				'per_serving_denominator' => $perServingDenominator
+			],
 			'warnings' => $warnings,
 			'complete' => count($warnings) === 0
 		];
@@ -88,14 +114,24 @@ class RecipeNutritionService extends BaseService
 		return $amount * (float)$conversion->factor;
 	}
 
-	private function AddWarning(array &$warnings, $recipePosition, $productId, $message)
+	private function AddWarning(array &$warnings, $recipePosition, $productId, $message, $nutrient = null)
 	{
-		$warnings[] = [
+		$warning = [
 			'product_id' => (int)$productId,
+			'product_id_effective' => isset($recipePosition->product_id_effective) ? (int)$recipePosition->product_id_effective : null,
+			'original_product_id' => isset($recipePosition->product_id) ? (int)$recipePosition->product_id : null,
 			'recipe_pos_id' => isset($recipePosition->recipe_pos_id) ? (int)$recipePosition->recipe_pos_id : null,
+			'ingredient_group' => $recipePosition->ingredient_group ?? null,
 			'qu_id' => isset($recipePosition->qu_id) ? (int)$recipePosition->qu_id : null,
 			'message' => $message
 		];
+
+		if ($nutrient !== null)
+		{
+			$warning['nutrient'] = $nutrient;
+		}
+
+		$warnings[] = $warning;
 	}
 
 	private function EmptyNutrition()

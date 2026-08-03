@@ -43,6 +43,20 @@ else
 	define('GROCY_DATAPATH', $datapath);
 }
 
+$autoloadFile = $root . '/packages/autoload.php';
+if (!is_file($autoloadFile))
+{
+	fwrite(STDERR, 'Missing Composer autoload file. Run this script inside the built Grocy container or install PHP dependencies with composer install.' . PHP_EOL);
+	exit(1);
+}
+
+$configFile = GROCY_DATAPATH . '/config.php';
+if (!is_file($configFile))
+{
+	fwrite(STDERR, 'Missing Grocy config file: ' . $configFile . PHP_EOL);
+	exit(1);
+}
+
 require_once $root . '/helpers/PrerequisiteChecker.php';
 
 try
@@ -55,8 +69,8 @@ catch (Grocy\Helpers\ERequirementNotMet $ex)
 	exit(1);
 }
 
-require_once $root . '/packages/autoload.php';
-require_once GROCY_DATAPATH . '/config.php';
+require_once $autoloadFile;
+require_once $configFile;
 require_once $root . '/config-dist.php';
 
 if ((GROCY_MODE === 'dev' || GROCY_MODE === 'demo' || GROCY_MODE === 'prerelease') && !defined('GROCY_USER_ID'))

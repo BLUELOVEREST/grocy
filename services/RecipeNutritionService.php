@@ -95,19 +95,51 @@ class RecipeNutritionService extends BaseService
 
 	private function GetConvertedAmount($recipePosition, $productId, $nutrition, array &$warnings)
 	{
+		$originalProductId = (int)$recipePosition->product_id;
+		$effectiveProductId = (int)$productId;
 		$ingredientQuId = (int)$recipePosition->qu_id;
 		$basisQuId = (int)$nutrition->basis_qu_id;
 		$amount = (float)$recipePosition->recipe_amount;
 
-		if ($ingredientQuId === $basisQuId)
+		if ($originalProductId === $effectiveProductId)
+		{
+			return $this->ConvertAmount($amount, $effectiveProductId, $ingredientQuId, $basisQuId, $recipePosition, $warnings, 'Missing quantity unit conversion');
+		}
+
+		$originalProduct = $this->DB->products($originalProductId);
+		$effectiveProduct = $this->DB->products($effectiveProductId);
+		if ($originalProduct === null || $effectiveProduct === null)
+		{
+			$this->AddWarning($warnings, $recipePosition, $effectiveProductId, 'Missing substitution product');
+			return null;
+		}
+
+		$amount = $this->ConvertAmount($amount, $originalProductId, $ingredientQuId, (int)$originalProduct->qu_id_stock, $recipePosition, $warnings, 'Missing original product quantity unit conversion');
+		if ($amount === null)
+		{
+			return null;
+		}
+
+		$amount = $this->ConvertAmount($amount, $effectiveProductId, (int)$originalProduct->qu_id_stock, (int)$effectiveProduct->qu_id_stock, $recipePosition, $warnings, 'Missing substitution quantity unit conversion');
+		if ($amount === null)
+		{
+			return null;
+		}
+
+		return $this->ConvertAmount($amount, $effectiveProductId, (int)$effectiveProduct->qu_id_stock, $basisQuId, $recipePosition, $warnings, 'Missing nutrition basis quantity unit conversion');
+	}
+
+	private function ConvertAmount($amount, $productId, $fromQuId, $toQuId, $recipePosition, array &$warnings, $warningMessage)
+	{
+		if ($fromQuId === $toQuId)
 		{
 			return $amount;
 		}
 
-		$conversion = $this->DB->cache__quantity_unit_conversions_resolved()->where('product_id = :1 AND from_qu_id = :2 AND to_qu_id = :3', $productId, $ingredientQuId, $basisQuId)->fetch();
+		$conversion = $this->DB->cache__quantity_unit_conversions_resolved()->where('product_id = :1 AND from_qu_id = :2 AND to_qu_id = :3', $productId, $fromQuId, $toQuId)->fetch();
 		if ($conversion === null)
 		{
-			$this->AddWarning($warnings, $recipePosition, $productId, 'Missing quantity unit conversion');
+			$this->AddWarning($warnings, $recipePosition, $productId, $warningMessage);
 			return null;
 		}
 

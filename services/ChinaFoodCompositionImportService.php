@@ -57,7 +57,7 @@ class ChinaFoodCompositionImportService extends BaseService
 
 	private function NullableNumber(array $item, $key)
 	{
-		if (!array_key_exists($key, $item) || $item[$key] === '' || $item[$key] === null)
+		if (!array_key_exists($key, $item) || $item[$key] === null || trim((string)$item[$key]) === '')
 		{
 			return null;
 		}

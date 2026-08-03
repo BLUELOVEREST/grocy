@@ -17,6 +17,10 @@ class ChinaFoodCompositionImportService extends BaseService
 			$files = [];
 		}
 		sort($files, SORT_STRING);
+		if (count($files) === 0)
+		{
+			throw new \InvalidArgumentException('No China Food JSON files found in: ' . $dataDir);
+		}
 
 		$imported = 0;
 		foreach ($files as $file)

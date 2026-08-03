@@ -83,5 +83,13 @@ if (GROCY_DISABLE_AUTH === true && !defined('GROCY_USER_ID'))
 	define('GROCY_USER_ID', 1);
 }
 
-$result = ChinaFoodCompositionImportService::GetInstance()->ImportDirectory($argv[1]);
-echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
+try
+{
+	$result = ChinaFoodCompositionImportService::GetInstance()->ImportDirectory($argv[1]);
+	echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
+}
+catch (\Throwable $ex)
+{
+	fwrite(STDERR, 'Import failed: ' . $ex->getMessage() . PHP_EOL);
+	exit(1);
+}

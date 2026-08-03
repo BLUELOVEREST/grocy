@@ -7,7 +7,7 @@ class FoodLibraryService extends BaseService
 	public function SearchFoods($query, $page = 1, $pageSize = 20)
 	{
 		$page = max(1, (int)$page);
-		$pageSize = max(1, (int)$pageSize);
+		$pageSize = min(100, max(1, (int)$pageSize));
 		$offset = ($page - 1) * $pageSize;
 		$params = [];
 		$where = 'p.active = 1 AND p.is_food = 1';
@@ -52,9 +52,8 @@ class FoodLibraryService extends BaseService
 			LEFT JOIN quantity_units qu_basis
 				ON pn.basis_qu_id = qu_basis.id
 			LEFT JOIN eric_food_sources efs
-				ON p.id = efs.product_id
+				ON efs.id = (SELECT MIN(id) FROM eric_food_sources WHERE product_id = p.id)
 			WHERE ' . $where . '
-			GROUP BY p.id
 			ORDER BY p.name COLLATE NOCASE
 			LIMIT :limit OFFSET :offset';
 		$statement = $pdo->prepare($sql);
@@ -68,10 +67,12 @@ class FoodLibraryService extends BaseService
 
 		return [
 			'foods' => array_map([$this, 'MapFoodRow'], $statement->fetchAll(\PDO::FETCH_OBJ)),
-			'page' => $page,
-			'pageSize' => $pageSize,
-			'totalCount' => $totalCount,
-			'hasMore' => $offset + $pageSize < $totalCount
+			'pagination' => [
+				'page' => $page,
+				'pageSize' => $pageSize,
+				'totalCount' => $totalCount,
+				'hasMore' => $offset + $pageSize < $totalCount
+			]
 		];
 	}
 
@@ -103,11 +104,10 @@ class FoodLibraryService extends BaseService
 			LEFT JOIN quantity_units qu_basis
 				ON pn.basis_qu_id = qu_basis.id
 			LEFT JOIN eric_food_sources efs
-				ON p.id = efs.product_id
+				ON efs.id = (SELECT MIN(id) FROM eric_food_sources WHERE product_id = p.id)
 			WHERE p.id = :productId
 				AND p.active = 1
-				AND p.is_food = 1
-			GROUP BY p.id');
+				AND p.is_food = 1');
 		$statement->bindValue(':productId', (int)$productId, \PDO::PARAM_INT);
 		$statement->execute();
 		$row = $statement->fetch(\PDO::FETCH_OBJ);
@@ -132,53 +132,81 @@ class FoodLibraryService extends BaseService
 		$stockUnitId = $this->ResolveQuantityUnitId($stockUnitName);
 		$basisUnitId = array_key_exists('basis_qu_id', $payload) ? (int)$payload['basis_qu_id'] : $this->ResolveQuantityUnitId($payload['basis_unit'] ?? 'g');
 		$sourcePayload = json_encode($payload, JSON_UNESCAPED_UNICODE);
-		$category = $payload['category'] ?? null;
-
-		$source = $this->DB->eric_food_sources()->where('provider = :1 AND external_id = :2', $provider, $externalId)->fetch();
-		if ($source === null)
+		if ($sourcePayload === false)
 		{
-			$product = $this->DB->products()->createRow([
-				'name' => $name,
-				'active' => 1,
-				'is_food' => 1,
-				'location_id' => $this->ResolveDefaultLocationId(),
-				'qu_id_purchase' => $stockUnitId,
-				'qu_id_stock' => $stockUnitId,
-				'qu_id_consume' => $stockUnitId,
-				'qu_id_price' => $stockUnitId
-			]);
-			$product->save();
-
-			$this->DB->eric_food_sources()->createRow([
-				'product_id' => $product->id,
-				'provider' => $provider,
-				'external_id' => $externalId,
-				'category' => $category,
-				'source_payload' => $sourcePayload
-			])->save();
+			throw new \InvalidArgumentException('Invalid source payload');
 		}
-		else
+		$category = $payload['category'] ?? null;
+		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
+
+		$pdo->beginTransaction();
+		try
 		{
-			$product = $this->DB->products($source->product_id);
-			if ($product === null)
+			$source = $this->DB->eric_food_sources()->where('provider = :1 AND external_id = :2', $provider, $externalId)->fetch();
+			if ($source === null)
 			{
-				throw new \InvalidArgumentException('Food product not found');
+				$product = $this->DB->products()->createRow([
+					'name' => $name,
+					'active' => 1,
+					'is_food' => 1,
+					'location_id' => $this->ResolveDefaultLocationId(),
+					'qu_id_purchase' => $stockUnitId,
+					'qu_id_stock' => $stockUnitId,
+					'qu_id_consume' => $stockUnitId,
+					'qu_id_price' => $stockUnitId
+				]);
+				$product->save();
+
+				$this->DB->eric_food_sources()->createRow([
+					'product_id' => $product->id,
+					'provider' => $provider,
+					'external_id' => $externalId,
+					'category' => $category,
+					'source_payload' => $sourcePayload
+				])->save();
+			}
+			else
+			{
+				$product = $this->DB->products($source->product_id);
+				if ($product === null)
+				{
+					throw new \InvalidArgumentException('Food product not found');
+				}
+
+				$product->update([
+					'name' => $name,
+					'active' => 1,
+					'is_food' => 1,
+					'qu_id_purchase' => $stockUnitId,
+					'qu_id_stock' => $stockUnitId
+				]);
+				$source->update([
+					'category' => $category,
+					'source_payload' => $sourcePayload
+				]);
 			}
 
-			$product->update([
-				'name' => $name,
-				'active' => 1,
-				'is_food' => 1,
-				'qu_id_purchase' => $stockUnitId,
-				'qu_id_stock' => $stockUnitId
-			]);
-			$source->update([
-				'category' => $category,
-				'source_payload' => $sourcePayload
-			]);
+			ProductNutritionService::GetInstance()->SaveNutritionInTransaction($product->id, $this->BuildNutritionPayload($payload, $basisUnitId));
+			$pdo->commit();
 		}
+		catch (\Throwable $ex)
+		{
+			if ($pdo->inTransaction())
+			{
+				$pdo->rollback();
+			}
 
-		ProductNutritionService::GetInstance()->SaveNutrition($product->id, $this->BuildNutritionPayload($payload, $basisUnitId));
+			if ($this->IsDuplicateSourceException($ex))
+			{
+				$existingFood = $this->TryGetFoodBySource($provider, $externalId);
+				if ($existingFood !== null)
+				{
+					return $existingFood;
+				}
+			}
+
+			throw $ex;
+		}
 
 		return $this->GetFood($product->id);
 	}
@@ -311,6 +339,30 @@ class FoodLibraryService extends BaseService
 				'factor' => (float)$row->factor
 			];
 		}, $statement->fetchAll(\PDO::FETCH_OBJ));
+	}
+
+	private function IsDuplicateSourceException(\Throwable $ex)
+	{
+		return strpos($ex->getMessage(), 'eric_food_sources.provider, eric_food_sources.external_id') !== false
+			|| strpos($ex->getMessage(), 'UNIQUE constraint failed: eric_food_sources') !== false;
+	}
+
+	private function TryGetFoodBySource($provider, $externalId)
+	{
+		$source = $this->DB->eric_food_sources()->where('provider = :1 AND external_id = :2', $provider, $externalId)->fetch();
+		if ($source === null)
+		{
+			return null;
+		}
+
+		try
+		{
+			return $this->GetFood($source->product_id);
+		}
+		catch (\InvalidArgumentException)
+		{
+			return null;
+		}
 	}
 
 	private function DecodeSourcePayload($sourcePayload)

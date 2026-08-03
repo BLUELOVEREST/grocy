@@ -203,6 +203,11 @@ class RecipesController extends BaseController
 		}
 	}
 
+	public function FoodLibrary(Request $request, Response $response, array $args)
+	{
+		return $this->RenderPage($response, 'foodlibrary');
+	}
+
 	public function RecipesSettings(Request $request, Response $response, array $args)
 	{
 		return $this->RenderPage($response, 'recipessettings');

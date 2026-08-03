@@ -196,6 +196,16 @@
 						<span class="nav-link-text">{{ $__t('Recipes') }}</span>
 					</a>
 				</li>
+				<li class="nav-item nav-item-sidebar permission-RECIPES @if($viewName == 'foodlibrary') active-page @endif"
+					data-toggle="tooltip"
+					data-placement="right"
+					title="{{ $__t('Food library') }}">
+					<a class="nav-link discrete-link"
+						href="{{ $U('/foodlibrary') }}">
+						<i class="fa-solid fa-fw fa-bowl-food"></i>
+						<span class="nav-link-text">{{ $__t('Food library') }}</span>
+					</a>
+				</li>
 				@if(GROCY_FEATURE_FLAG_RECIPES_MEALPLAN)
 				<li class="nav-item nav-item-sidebar permission-RECIPES_MEALPLAN @if($viewName == 'mealplan') active-page @endif"
 					data-toggle="tooltip"

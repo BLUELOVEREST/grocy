@@ -10,6 +10,7 @@ use Grocy\Controllers\Api\GenericEntityApiController;
 use Grocy\Controllers\Api\OpenApiController;
 use Grocy\Controllers\Api\ProductPropertiesApiController;
 use Grocy\Controllers\Api\PrintApiController;
+use Grocy\Controllers\Api\RecipeNutritionApiController;
 use Grocy\Controllers\Api\RecipesApiController;
 use Grocy\Controllers\Api\StockApiController;
 use Grocy\Controllers\Api\SystemApiController;
@@ -210,6 +211,7 @@ $app->group('/api', function (RouteCollectorProxy $group)
 	$group->get('/eric/foods/search', [FoodLibraryApiController::class, 'Search']);
 	$group->get('/eric/foods/{productId}', [FoodLibraryApiController::class, 'Get']);
 	$group->post('/eric/foods/import', [FoodLibraryApiController::class, 'Import']);
+	$group->get('/eric/recipes/{recipeId}/nutrition', [RecipeNutritionApiController::class, 'Get']);
 
 	// Stock
 	$group->get('/stock', [StockApiController::class, 'CurrentStock']);

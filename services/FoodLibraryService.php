@@ -232,10 +232,11 @@ class FoodLibraryService extends BaseService
 
 		if (array_key_exists('basis_qu_id', $payload))
 		{
-			$basisQuId = (int)$payload['basis_qu_id'];
-			if ($this->DB->quantity_units($basisQuId) === null)
+			$rawBasisQuId = $payload['basis_qu_id'];
+			$basisQuId = filter_var($rawBasisQuId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+			if ($basisQuId === false || $this->DB->quantity_units($basisQuId) === null)
 			{
-				throw new \InvalidArgumentException('Missing Grocy quantity unit: ' . $payload['basis_qu_id']);
+				throw new \InvalidArgumentException('Missing Grocy quantity unit: ' . $rawBasisQuId);
 			}
 
 			return $basisQuId;

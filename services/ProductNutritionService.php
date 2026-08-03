@@ -66,8 +66,14 @@ class ProductNutritionService extends BaseService
 		}
 
 		$basisAmount = (float)($payload['basis_amount'] ?? 0);
-		$basisQuId = (int)($payload['basis_qu_id'] ?? 0);
-		if ($basisAmount <= 0 || $basisQuId <= 0)
+		$rawBasisQuId = $payload['basis_qu_id'] ?? null;
+		$basisQuId = filter_var($rawBasisQuId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+		if ($basisQuId === false || $this->DB->quantity_units($basisQuId) === null)
+		{
+			throw new \InvalidArgumentException('Missing Grocy quantity unit: ' . $rawBasisQuId);
+		}
+
+		if ($basisAmount <= 0)
 		{
 			throw new \InvalidArgumentException('A positive nutrition basis amount and quantity unit are required');
 		}

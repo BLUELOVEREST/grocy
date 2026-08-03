@@ -21,7 +21,7 @@ function FoodLibraryFormatNumber(value)
 		return FoodLibraryEscape(value);
 	}
 
-	return numberValue.toLocaleString({ minimumFractionDigits: 0, maximumFractionDigits: Grocy.UserSettings.stock_decimal_places_amounts });
+	return numberValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: Grocy.UserSettings.stock_decimal_places_amounts });
 }
 
 function FoodLibraryNutritionValue(food, key)

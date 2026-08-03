@@ -2,6 +2,7 @@
 
 namespace Grocy\Controllers;
 
+use Grocy\Controllers\Users\User;
 use Grocy\Helpers\Grocycode;
 use Grocy\Services\RecipesService;
 use Grocy\Services\StockService;
@@ -205,6 +206,8 @@ class RecipesController extends BaseController
 
 	public function FoodLibrary(Request $request, Response $response, array $args)
 	{
+		User::CheckPermission($request, User::PERMISSION_RECIPES);
+
 		return $this->RenderPage($response, 'foodlibrary');
 	}
 

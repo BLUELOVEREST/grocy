@@ -4,7 +4,7 @@ namespace Grocy\Services;
 
 class FoodLibraryService extends BaseService
 {
-	public function SearchFoods($query, $page = 1, $pageSize = 20)
+	public function SearchFoods($query = null, $page = 1, $pageSize = 20)
 	{
 		$page = max(1, (int)$page);
 		$pageSize = min(100, max(1, (int)$pageSize));
@@ -130,7 +130,7 @@ class FoodLibraryService extends BaseService
 		$name = $this->RequiredPayloadValue($payload, 'name');
 		$stockUnitName = $payload['stock_unit'] ?? 'g';
 		$stockUnitId = $this->ResolveQuantityUnitId($stockUnitName);
-		$basisUnitId = array_key_exists('basis_qu_id', $payload) ? (int)$payload['basis_qu_id'] : $this->ResolveQuantityUnitId($payload['basis_unit'] ?? 'g');
+		$basisUnitId = $this->ResolveBasisQuantityUnitId($payload);
 		$sourcePayload = json_encode($payload, JSON_UNESCAPED_UNICODE);
 		if ($sourcePayload === false)
 		{
@@ -221,6 +221,27 @@ class FoodLibraryService extends BaseService
 		}
 
 		return (int)$unit->id;
+	}
+
+	private function ResolveBasisQuantityUnitId(array $payload)
+	{
+		if (array_key_exists('basis_unit', $payload) && trim((string)$payload['basis_unit']) !== '')
+		{
+			return $this->ResolveQuantityUnitId($payload['basis_unit']);
+		}
+
+		if (array_key_exists('basis_qu_id', $payload))
+		{
+			$basisQuId = (int)$payload['basis_qu_id'];
+			if ($this->DB->quantity_units($basisQuId) === null)
+			{
+				throw new \InvalidArgumentException('Missing Grocy quantity unit: ' . $payload['basis_qu_id']);
+			}
+
+			return $basisQuId;
+		}
+
+		return $this->ResolveQuantityUnitId('g');
 	}
 
 	private function ResolveDefaultLocationId()

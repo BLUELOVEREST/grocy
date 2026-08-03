@@ -27,9 +27,14 @@ class ChinaFoodCompositionImportService extends BaseService
 			}
 
 			$items = json_decode(file_get_contents($file), true);
-			if (!is_array($items) || json_last_error() !== JSON_ERROR_NONE)
+			if (json_last_error() !== JSON_ERROR_NONE)
 			{
-				throw new \InvalidArgumentException('Invalid JSON file: ' . $file);
+				throw new \InvalidArgumentException('Invalid JSON file: ' . $file . ' (' . json_last_error_msg() . ')');
+			}
+
+			if (!is_array($items))
+			{
+				throw new \InvalidArgumentException('Invalid JSON file: ' . $file . ' (expected array)');
 			}
 
 			$category = $this->CategoryFromFilename($file);
@@ -71,7 +76,7 @@ class ChinaFoodCompositionImportService extends BaseService
 
 		foreach (['foodCode', 'foodName'] as $key)
 		{
-			if (!array_key_exists($key, $item) || trim((string)$item[$key]) === '')
+			if (!array_key_exists($key, $item) || !$this->IsImportScalar($item[$key]) || trim((string)$item[$key]) === '')
 			{
 				throw new \InvalidArgumentException('Invalid China Food item in ' . $file . ' at row ' . $rowIndex . ': missing ' . $key);
 			}
@@ -80,17 +85,22 @@ class ChinaFoodCompositionImportService extends BaseService
 
 	private function NullableNumber(array $item, $key, $file, $rowIndex)
 	{
-		if (!array_key_exists($key, $item) || $item[$key] === null || trim((string)$item[$key]) === '')
+		if (!array_key_exists($key, $item) || $item[$key] === null || (is_string($item[$key]) && trim($item[$key]) === ''))
 		{
 			return null;
 		}
 
-		if (!is_numeric($item[$key]))
+		if (!$this->IsImportScalar($item[$key]) || !is_numeric($item[$key]))
 		{
 			throw new \InvalidArgumentException('Invalid numeric nutrient ' . $key . ' in ' . $file . ' at row ' . $rowIndex . ' (foodCode=' . $item['foodCode'] . ', foodName=' . $item['foodName'] . ')');
 		}
 
 		return (float)$item[$key];
+	}
+
+	private function IsImportScalar($value)
+	{
+		return is_scalar($value) && !is_bool($value);
 	}
 
 	private function CategoryFromFilename($file)

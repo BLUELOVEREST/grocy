@@ -104,6 +104,33 @@ function FoodLibrarySource(food)
 	return FoodLibraryEscape(parts.join(" / "));
 }
 
+function FoodLibraryRenderName(data, type, row)
+{
+	if (type !== "display")
+	{
+		return data;
+	}
+
+	if (FoodLibraryIsExternalCandidate(row))
+	{
+		return FoodLibraryEscape(data) + ' <span class="badge badge-info">Boohee</span>';
+	}
+
+	return '<a href="' + U("/product/" + encodeURIComponent(row.id.toString())) + '">' + FoodLibraryEscape(data) + '</a>';
+}
+
+function FoodLibraryRenderExternalAction(row, type)
+{
+	if (type !== "display" || !FoodLibraryIsExternalCandidate(row))
+	{
+		return "";
+	}
+
+	return '<button type="button" class="btn btn-sm btn-success food-library-import-external" data-provider="' + FoodLibraryEscape(row.source.provider) + '" data-external-id="' + FoodLibraryEscape(row.source.external_id) + '">' + __t("Add") + '</button>';
+}
+
+var FoodLibraryColumnCount = 9;
+
 var foodLibraryTable = $("#food-library-table").DataTable({
 	"processing": true,
 	"serverSide": true,
@@ -142,17 +169,7 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 			data: "name",
 			render: function(data, type, row)
 			{
-				if (type !== "display")
-				{
-					return data;
-				}
-
-				if (FoodLibraryIsExternalCandidate(row))
-				{
-					return FoodLibraryEscape(data) + ' <span class="badge badge-info">Boohee</span>';
-				}
-
-				return '<a href="' + U("/product/" + encodeURIComponent(row.id.toString())) + '">' + FoodLibraryEscape(data) + '</a>';
+				return FoodLibraryRenderName(data, type, row);
 			}
 		},
 		{
@@ -215,12 +232,7 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 			orderable: false,
 			render: function(data, type, row)
 			{
-				if (type !== "display" || !FoodLibraryIsExternalCandidate(row))
-				{
-					return "";
-				}
-
-				return '<button type="button" class="btn btn-sm btn-success food-library-import-external" data-provider="' + FoodLibraryEscape(row.source.provider) + '" data-external-id="' + FoodLibraryEscape(row.source.external_id) + '">' + __t("Add") + '</button>';
+				return FoodLibraryRenderExternalAction(row, type);
 			}
 		}
 	],

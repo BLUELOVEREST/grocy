@@ -129,7 +129,78 @@ function FoodLibraryRenderExternalAction(row, type)
 	return '<button type="button" class="btn btn-sm btn-success food-library-import-external" data-provider="' + FoodLibraryEscape(row.source.provider) + '" data-external-id="' + FoodLibraryEscape(row.source.external_id) + '">' + __t("Add") + '</button>';
 }
 
-var FoodLibraryColumnCount = 9;
+var FoodLibraryColumns = [
+	{
+		data: "name",
+		render: function(data, type, row)
+		{
+			return FoodLibraryRenderName(data, type, row);
+		}
+	},
+	{
+		data: null,
+		orderable: false,
+		render: function(data, type, row)
+		{
+			if (type !== "display")
+			{
+				return Array.isArray(row.aliases) ? row.aliases.join(", ") : "";
+			}
+
+			return FoodLibraryAliases(row);
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "calories");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "protein");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "fat");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "carbohydrates");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionBasis(row);
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibrarySource(row);
+		}
+	},
+	{
+		data: null,
+		orderable: false,
+		render: function(data, type, row)
+		{
+			return FoodLibraryRenderExternalAction(row, type);
+		}
+	}
+];
 
 var foodLibraryTable = $("#food-library-table").DataTable({
 	"processing": true,
@@ -164,78 +235,7 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 			});
 		});
 	},
-	"columns": [
-		{
-			data: "name",
-			render: function(data, type, row)
-			{
-				return FoodLibraryRenderName(data, type, row);
-			}
-		},
-		{
-			data: null,
-			orderable: false,
-			render: function(data, type, row)
-			{
-				if (type !== "display")
-				{
-					return Array.isArray(row.aliases) ? row.aliases.join(", ") : "";
-				}
-
-				return FoodLibraryAliases(row);
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibraryNutritionValue(row, "calories");
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibraryNutritionValue(row, "protein");
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibraryNutritionValue(row, "fat");
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibraryNutritionValue(row, "carbohydrates");
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibraryNutritionBasis(row);
-			}
-		},
-		{
-			data: null,
-			render: function(data, type, row)
-			{
-				return FoodLibrarySource(row);
-			}
-		},
-		{
-			data: null,
-			orderable: false,
-			render: function(data, type, row)
-			{
-				return FoodLibraryRenderExternalAction(row, type);
-			}
-		}
-	],
+	"columns": FoodLibraryColumns,
 	"columnDefs": [
 		{ "type": "html", "targets": 0 },
 		{ "type": "html-num-fmt", "targets": [2, 3, 4, 5] }

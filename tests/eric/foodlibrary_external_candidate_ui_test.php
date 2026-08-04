@@ -67,7 +67,52 @@ function extract_js_function($source, $name)
 	exit(1);
 }
 
-function run_node_render_contract($viewJs)
+function extract_js_variable($source, $name)
+{
+	$start = strpos($source, 'var ' . $name . ' = ');
+	if ($start === false)
+	{
+		fwrite(STDERR, 'missing ' . $name . " variable\n");
+		exit(1);
+	}
+
+	$openBracket = strpos($source, '[', $start);
+	if ($openBracket === false)
+	{
+		fwrite(STDERR, 'malformed ' . $name . " variable\n");
+		exit(1);
+	}
+
+	$depth = 0;
+	$length = strlen($source);
+	for ($i = $openBracket; $i < $length; $i++)
+	{
+		if ($source[$i] === '[' || $source[$i] === '{' || $source[$i] === '(')
+		{
+			$depth++;
+		}
+		elseif ($source[$i] === ']' || $source[$i] === '}' || $source[$i] === ')')
+		{
+			$depth--;
+			if ($depth === 0)
+			{
+				$semicolon = strpos($source, ';', $i);
+				if ($semicolon === false)
+				{
+					fwrite(STDERR, 'unterminated ' . $name . " variable\n");
+					exit(1);
+				}
+
+				return substr($source, $start, $semicolon - $start + 1);
+			}
+		}
+	}
+
+	fwrite(STDERR, 'unterminated ' . $name . " variable\n");
+	exit(1);
+}
+
+function run_node_render_contract($viewJs, $headerCount)
 {
 	$functions = [
 		'FoodLibraryEscape',
@@ -98,6 +143,7 @@ JS;
 	{
 		$script .= extract_js_function($viewJs, $function) . "\n\n";
 	}
+	$script .= extract_js_variable($viewJs, 'FoodLibraryColumns') . "\n\n";
 
 	$script .= <<<'JS'
 function check(condition, message)
@@ -150,6 +196,8 @@ const localName = FoodLibraryRenderName('Local <Food>', 'display', { imported: t
 check(localName.includes('/product/12'), 'local food should link to product URL');
 check(localName.includes('Local &lt;Food&gt;'), 'local food link text should be escaped');
 
+checkSame(FoodLibraryColumns.length, Number(process.env.FOOD_LIBRARY_HEADER_COUNT), 'FoodLibraryColumns length should match Blade table header count');
+
 console.log('foodlibrary external render contract ok');
 JS;
 
@@ -163,7 +211,7 @@ JS;
 	file_put_contents($tmpFile, $script);
 	$output = [];
 	$exitCode = 0;
-	exec('node ' . escapeshellarg($tmpFile) . ' 2>&1', $output, $exitCode);
+	exec('FOOD_LIBRARY_HEADER_COUNT=' . escapeshellarg((string)$headerCount) . ' node ' . escapeshellarg($tmpFile) . ' 2>&1', $output, $exitCode);
 	unlink($tmpFile);
 
 	if ($exitCode !== 0)
@@ -199,16 +247,14 @@ check_contains($viewJs, 'FoodLibraryIsExternalCandidate(row)', 'missing guard pr
 check_contains($view, "{{ \$__t('Actions') }}", 'missing Actions table header');
 check_contains($viewJs, 'FoodLibraryRenderExternalAction(row, type)', 'action column should use FoodLibraryRenderExternalAction');
 check_contains($viewJs, 'FoodLibraryRenderName(data, type, row)', 'name column should use FoodLibraryRenderName');
+check_contains($viewJs, 'var FoodLibraryColumns = [', 'missing FoodLibraryColumns array');
+check_contains($viewJs, '"columns": FoodLibraryColumns', 'DataTables should use FoodLibraryColumns');
 check_contains($viewJs, 'FoodLibraryEscape(row.source.provider)', 'provider attribute should use FoodLibraryEscape');
 check_contains($viewJs, 'FoodLibraryEscape(row.source.external_id)', 'external id attribute should use FoodLibraryEscape');
 check_match('/function FoodLibraryRenderName[\s\S]*FoodLibraryIsExternalCandidate\(row\)[\s\S]*return \'<a href="/', $viewJs, 'external candidate branch should appear before product link branch');
 check_match('/function FoodLibraryRenderName[\s\S]*FoodLibraryIsExternalCandidate\(row\)[\s\S]*Boohee[\s\S]*return \'<a href="/', $viewJs, 'external branch should render badge before product link fallback');
 
 $headerCount = preg_match_all('/<th\b/', $view);
-check_match('/var FoodLibraryColumnCount = (\d+);/', $viewJs, 'missing FoodLibraryColumnCount marker');
-preg_match('/var FoodLibraryColumnCount = (\d+);/', $viewJs, $columnMatch);
-check_same((string)$headerCount, $columnMatch[1], 'food library table header count should match DataTables column count');
-
-run_node_render_contract($viewJs);
+run_node_render_contract($viewJs, $headerCount);
 
 echo "foodlibrary external UI contract ok\n";

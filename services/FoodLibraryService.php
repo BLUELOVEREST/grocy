@@ -119,6 +119,8 @@ class FoodLibraryService extends BaseService
 	{
 		$queryText = $query === null ? '' : trim((string)$query);
 		$localResult = $this->SearchLocalFoods($query, $page, $pageSize);
+		$localResult['foods'] = is_array($localResult['foods'] ?? null) ? $localResult['foods'] : [];
+		$localTotalCount = (int)($localResult['pagination']['totalCount'] ?? 0);
 
 		foreach ($localResult['foods'] as &$food)
 		{
@@ -139,7 +141,7 @@ class FoodLibraryService extends BaseService
 			]
 		]);
 
-		if ($queryText === '' || count($localResult['foods']) > 0 || (defined('GROCY_BOOHEE_FALLBACK_ENABLED') && GROCY_BOOHEE_FALLBACK_ENABLED === false))
+		if ($queryText === '' || $localTotalCount > 0 || (defined('GROCY_BOOHEE_FALLBACK_ENABLED') && GROCY_BOOHEE_FALLBACK_ENABLED === false))
 		{
 			return $localResult;
 		}

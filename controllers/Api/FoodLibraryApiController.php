@@ -80,4 +80,32 @@ class FoodLibraryApiController extends BaseApiController
 			return $this->GenericErrorResponse($response, $ex->getMessage(), 400);
 		}
 	}
+
+	public function ImportFromSource(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_RECIPES);
+
+		try
+		{
+			$payload = $request->getParsedBody();
+			if (!is_array($payload))
+			{
+				$payload = json_decode($request->getBody()->getContents(), true);
+			}
+			if (!is_array($payload))
+			{
+				return $this->GenericErrorResponse($response, 'Invalid request body', 400);
+			}
+
+			return $this->ApiResponse($response, FoodLibraryService::GetInstance()->ImportFromSource($payload));
+		}
+		catch (\InvalidArgumentException $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage(), 400);
+		}
+		catch (\RuntimeException $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage(), 502);
+		}
+	}
 }

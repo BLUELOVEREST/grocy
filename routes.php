@@ -212,6 +212,7 @@ $app->group('/api', function (RouteCollectorProxy $group)
 	$group->put('/eric/foods/{productId}/aliases', [FoodLibraryApiController::class, 'UpdateAliases']);
 	$group->get('/eric/foods/{productId}', [FoodLibraryApiController::class, 'Get']);
 	$group->post('/eric/foods/import', [FoodLibraryApiController::class, 'Import']);
+	$group->post('/eric/foods/import-from-source', [FoodLibraryApiController::class, 'ImportFromSource']);
 	$group->get('/eric/recipes/{recipeId}/nutrition', [RecipeNutritionApiController::class, 'Get']);
 
 	// Stock

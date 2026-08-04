@@ -348,6 +348,19 @@ class FoodLibraryService extends BaseService
 		];
 	}
 
+	public function ImportFromSource(array $payload)
+	{
+		$provider = $this->RequiredPayloadValue($payload, 'provider');
+		$externalId = $this->RequiredPayloadValue($payload, 'external_id');
+		switch ($provider)
+		{
+			case 'boohee':
+				return BooheeFoodSearchService::GetInstance()->ImportFoodByExternalId($externalId);
+			default:
+				throw new \InvalidArgumentException('Unsupported food source provider: ' . $provider);
+		}
+	}
+
 	public function ImportFood(array $payload)
 	{
 		$provider = $this->RequiredPayloadValue($payload, 'provider');

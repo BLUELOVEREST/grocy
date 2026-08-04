@@ -6,6 +6,11 @@ class FoodLibraryService extends BaseService
 {
 	public function SearchFoods($query = null, $page = 1, $pageSize = 20)
 	{
+		return $this->SearchFoodsWithFallback($query, $page, $pageSize);
+	}
+
+	public function SearchLocalFoods($query = null, $page = 1, $pageSize = 20)
+	{
 		$page = max(1, (int)$page);
 		$pageSize = min(100, max(1, (int)$pageSize));
 		$offset = ($page - 1) * $pageSize;
@@ -108,6 +113,67 @@ class FoodLibraryService extends BaseService
 				'hasMore' => $offset + $pageSize < $totalCount
 			]
 		];
+	}
+
+	public function SearchFoodsWithFallback($query = null, $page = 1, $pageSize = 20)
+	{
+		$queryText = $query === null ? '' : trim((string)$query);
+		$localResult = $this->SearchLocalFoods($query, $page, $pageSize);
+
+		foreach ($localResult['foods'] as &$food)
+		{
+			$food['imported'] = true;
+			if (!array_key_exists('source', $food) || !is_array($food['source']))
+			{
+				$food['source'] = [];
+			}
+			$food['source']['type'] = 'grocy';
+		}
+		unset($food);
+
+		$localResult = array_merge($localResult, [
+			'fallback' => [
+				'used' => false,
+				'provider' => null,
+				'error' => null
+			]
+		]);
+
+		if ($queryText === '' || count($localResult['foods']) > 0 || (defined('GROCY_BOOHEE_FALLBACK_ENABLED') && GROCY_BOOHEE_FALLBACK_ENABLED === false))
+		{
+			return $localResult;
+		}
+
+		if (!(defined('GROCY_BOOHEE_API_KEY') && trim((string)GROCY_BOOHEE_API_KEY) !== ''))
+		{
+			return $localResult;
+		}
+
+		try
+		{
+			$fallbackResult = BooheeFoodSearchService::GetInstance()->SearchFoods($queryText, $page, $pageSize);
+			$fallbackResult = array_merge($fallbackResult, [
+				'fallback' => [
+					'used' => true,
+					'provider' => 'boohee',
+					'error' => null
+				]
+			]);
+
+			return $fallbackResult;
+		}
+		catch (\Throwable $ex)
+		{
+			$localResult = array_merge($localResult, [
+				'fallback' => [
+					'used' => true,
+					'provider' => 'boohee',
+					'error' => $ex->getMessage()
+				]
+			]);
+
+			return $localResult;
+		}
 	}
 
 	public function GetFood($productId)

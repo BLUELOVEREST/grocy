@@ -58,6 +58,7 @@
 			<thead>
 				<tr>
 					<th>{{ $__t('Name') }}</th>
+					<th>{{ $__t('Aliases') }}</th>
 					<th>{{ $__t('Energy') }}</th>
 					<th>{{ $__t('Protein') }}</th>
 					<th>{{ $__t('Fat') }}</th>

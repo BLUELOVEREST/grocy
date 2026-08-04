@@ -34,6 +34,25 @@ function FoodLibraryNutritionValue(food, key)
 	return FoodLibraryFormatNumber(food.nutrition[key]);
 }
 
+function FoodLibraryAliases(food)
+{
+	if (!Array.isArray(food.aliases) || food.aliases.length === 0)
+	{
+		return "";
+	}
+
+	return food.aliases.map(function(alias)
+	{
+		var escapedAlias = FoodLibraryEscape(alias);
+		if (food.matched_alias && alias === food.matched_alias)
+		{
+			return '<span class="badge badge-info">' + escapedAlias + '</span>';
+		}
+
+		return '<span class="badge badge-secondary">' + escapedAlias + '</span>';
+	}).join(" ");
+}
+
 function FoodLibraryNutritionBasis(food)
 {
 	if (!food.nutrition || food.nutrition.basis_amount === null || !food.nutrition.basis_unit)
@@ -116,6 +135,19 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 		},
 		{
 			data: null,
+			orderable: false,
+			render: function(data, type, row)
+			{
+				if (type !== "display")
+				{
+					return Array.isArray(row.aliases) ? row.aliases.join(", ") : "";
+				}
+
+				return FoodLibraryAliases(row);
+			}
+		},
+		{
+			data: null,
 			render: function(data, type, row)
 			{
 				return FoodLibraryNutritionValue(row, "calories");
@@ -159,7 +191,7 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 	],
 	"columnDefs": [
 		{ "type": "html", "targets": 0 },
-		{ "type": "html-num-fmt", "targets": [1, 2, 3, 4] }
+		{ "type": "html-num-fmt", "targets": [2, 3, 4, 5] }
 	].concat($.fn.dataTable.defaults.columnDefs)
 });
 

@@ -501,12 +501,18 @@ class FoodLibraryService extends BaseService
 
 	private function RequiredPayloadValue(array $payload, $key)
 	{
-		if (!array_key_exists($key, $payload) || trim((string)$payload[$key]) === '')
+		if (!array_key_exists($key, $payload) || (!is_string($payload[$key]) && !is_int($payload[$key]) && !is_float($payload[$key])))
 		{
 			throw new \InvalidArgumentException($key . ' is required');
 		}
 
-		return trim((string)$payload[$key]);
+		$value = trim((string)$payload[$key]);
+		if ($value === '')
+		{
+			throw new \InvalidArgumentException($key . ' is required');
+		}
+
+		return $value;
 	}
 
 	private function BuildNutritionPayload(array $payload, $basisUnitId)

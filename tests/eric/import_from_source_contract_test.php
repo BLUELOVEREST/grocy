@@ -32,8 +32,11 @@ if ($service === false)
 
 check_contains($controller, 'function ImportFromSource', 'missing ImportFromSource controller action');
 check_contains($controller, 'FoodLibraryService::GetInstance()->ImportFromSource($payload)', 'missing ImportFromSource service call');
-check_contains($routes, '/eric/foods/import-from-source', 'missing import-from-source route');
+check_contains($routes, "\$group->post('/eric/foods/import-from-source'", 'missing import-from-source POST route');
 check_contains($service, 'public function ImportFromSource(array $payload)', 'missing ImportFromSource service method');
 check_contains($service, "case 'boohee'", 'missing boohee provider import case');
+check_contains($service, 'is_string($payload[$key])', 'missing string payload validation');
+check_contains($service, 'is_int($payload[$key])', 'missing int payload validation');
+check_contains($service, 'is_float($payload[$key])', 'missing float payload validation');
 
 echo "import-from-source contract ok\n";

@@ -73,6 +73,11 @@ Setting('BASE_URL', '/');
 // Leave empty to disable external barcode lookups
 Setting('STOCK_BARCODE_LOOKUP_PLUGIN', 'OpenFoodFactsBarcodeLookupPlugin');
 
+// Eric food library Boohee fallback
+// Can also be set via GROCY_BOOHEE_API_KEY and GROCY_BOOHEE_FALLBACK_ENABLED
+Setting('BOOHEE_API_KEY', '');
+Setting('BOOHEE_FALLBACK_ENABLED', true);
+
 // If, however, your webserver does not support URL rewriting, set this to true
 Setting('DISABLE_URL_REWRITING', false);
 

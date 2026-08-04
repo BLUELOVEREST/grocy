@@ -9,18 +9,29 @@ class FoodLibraryService extends BaseService
 		$page = max(1, (int)$page);
 		$pageSize = min(100, max(1, (int)$pageSize));
 		$offset = ($page - 1) * $pageSize;
-		$params = [];
+		$queryText = $query === null ? '' : trim((string)$query);
+		$searchParams = [
+			':query' => '%' . $queryText . '%',
+		];
+		$orderParams = [
+			':exactQuery' => $queryText,
+			':prefixQuery' => $queryText . '%'
+		];
 		$where = 'p.active = 1 AND p.is_food = 1';
 
-		if ($query !== null && trim($query) !== '')
+		if ($queryText !== '')
 		{
-			$where .= ' AND p.name LIKE :query';
-			$params[':query'] = '%' . trim($query) . '%';
+			$where .= ' AND (p.name LIKE :query OR efa.alias LIKE :query)';
 		}
 
 		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
-		$countStatement = $pdo->prepare('SELECT COUNT(DISTINCT p.id) FROM products p WHERE ' . $where);
-		foreach ($params as $key => $value)
+		$countStatement = $pdo->prepare('
+			SELECT COUNT(DISTINCT p.id)
+			FROM products p
+			LEFT JOIN eric_food_aliases efa
+				ON efa.product_id = p.id
+			WHERE ' . $where);
+		foreach ($queryText === '' ? [] : $searchParams as $key => $value)
 		{
 			$countStatement->bindValue($key, $value);
 		}
@@ -43,8 +54,19 @@ class FoodLibraryService extends BaseService
 				efs.provider,
 				efs.external_id,
 				efs.category,
-				efs.source_payload
+				efs.source_payload,
+				(
+					SELECT alias
+					FROM eric_food_aliases
+					WHERE product_id = p.id
+						AND :exactQuery <> \'\'
+						AND alias LIKE :query
+					ORDER BY alias COLLATE NOCASE
+					LIMIT 1
+				) AS matched_alias
 			FROM products p
+			LEFT JOIN eric_food_aliases efa
+				ON efa.product_id = p.id
 			LEFT JOIN product_nutrition pn
 				ON p.id = pn.product_id
 			LEFT JOIN quantity_units qu_stock
@@ -54,10 +76,15 @@ class FoodLibraryService extends BaseService
 			LEFT JOIN eric_food_sources efs
 				ON efs.id = (SELECT MIN(id) FROM eric_food_sources WHERE product_id = p.id)
 			WHERE ' . $where . '
-			ORDER BY p.name COLLATE NOCASE
+			GROUP BY p.id
+			ORDER BY
+				CASE WHEN p.name COLLATE NOCASE = :exactQuery THEN 0 ELSE 1 END,
+				CASE WHEN p.name LIKE :prefixQuery THEN 0 ELSE 1 END,
+				CASE WHEN MAX(CASE WHEN efa.alias LIKE :query THEN 1 ELSE 0 END) = 1 THEN 0 ELSE 1 END,
+				p.name COLLATE NOCASE
 			LIMIT :limit OFFSET :offset';
 		$statement = $pdo->prepare($sql);
-		foreach ($params as $key => $value)
+		foreach (array_merge($searchParams, $orderParams) as $key => $value)
 		{
 			$statement->bindValue($key, $value);
 		}
@@ -121,6 +148,101 @@ class FoodLibraryService extends BaseService
 		$food['unit_conversions'] = $this->GetProductUnitConversions((int)$productId);
 
 		return $food;
+	}
+
+	private function NormalizeAliases($aliases)
+	{
+		if ($aliases === null)
+		{
+			return [];
+		}
+
+		if (is_string($aliases))
+		{
+			$aliases = preg_split('/[\r\n,]+/', $aliases);
+		}
+		elseif (!is_array($aliases))
+		{
+			throw new \InvalidArgumentException('Aliases must be an array or string');
+		}
+
+		$normalizedAliases = [];
+		$seen = [];
+		foreach ($aliases as $alias)
+		{
+			$alias = trim((string)$alias);
+			if ($alias === '' || array_key_exists($alias, $seen))
+			{
+				continue;
+			}
+
+			$normalizedAliases[] = $alias;
+			$seen[$alias] = true;
+		}
+
+		return $normalizedAliases;
+	}
+
+	public function GetFoodAliases($productId)
+	{
+		$statement = DatabaseService::GetInstance()->GetDbConnectionRaw()->prepare('
+			SELECT alias
+			FROM eric_food_aliases
+			WHERE product_id = :productId
+			ORDER BY alias COLLATE NOCASE');
+		$statement->bindValue(':productId', (int)$productId, \PDO::PARAM_INT);
+		$statement->execute();
+
+		return array_map(function ($alias)
+		{
+			return (string)$alias;
+		}, $statement->fetchAll(\PDO::FETCH_COLUMN));
+	}
+
+	public function ReplaceFoodAliases($productId, $aliases)
+	{
+		$productId = (int)$productId;
+		$normalizedAliases = $this->NormalizeAliases($aliases);
+		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
+
+		$productStatement = $pdo->prepare('
+			SELECT id
+			FROM products
+			WHERE id = :productId
+				AND active = 1
+				AND is_food = 1');
+		$productStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+		$productStatement->execute();
+		if ($productStatement->fetchColumn() === false)
+		{
+			throw new \InvalidArgumentException('Food product not found');
+		}
+
+		$deleteStatement = $pdo->prepare('DELETE FROM eric_food_aliases WHERE product_id = :productId');
+		$deleteStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+		$deleteStatement->execute();
+
+		$insertStatement = $pdo->prepare('
+			INSERT INTO eric_food_aliases (product_id, alias)
+			VALUES (:productId, :alias)');
+		foreach ($normalizedAliases as $alias)
+		{
+			$insertStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+			$insertStatement->bindValue(':alias', $alias);
+			$insertStatement->execute();
+		}
+
+		return $this->GetFoodAliases($productId);
+	}
+
+	public function UpdateAliases($productId, $aliases)
+	{
+		$productId = (int)$productId;
+
+		return [
+			'product_id' => $productId,
+			'aliases' => $this->ReplaceFoodAliases($productId, $aliases)
+		];
 	}
 
 	public function ImportFood(array $payload)
@@ -187,6 +309,11 @@ class FoodLibraryService extends BaseService
 			}
 
 			ProductNutritionService::GetInstance()->SaveNutritionInTransaction($product->id, $this->BuildNutritionPayload($payload, $basisUnitId));
+			if (array_key_exists('aliases', $payload))
+			{
+				$this->ReplaceFoodAliases((int)$product->id, $payload['aliases']);
+			}
+
 			$pdo->commit();
 		}
 		catch (\Throwable $ex)
@@ -290,6 +417,8 @@ class FoodLibraryService extends BaseService
 		return [
 			'id' => (int)$row->id,
 			'name' => $row->name,
+			'aliases' => $this->GetFoodAliases((int)$row->id),
+			'matched_alias' => property_exists($row, 'matched_alias') ? $row->matched_alias : null,
 			'description' => $row->description,
 			'active' => (int)$row->active,
 			'is_food' => (int)$row->is_food === 1,

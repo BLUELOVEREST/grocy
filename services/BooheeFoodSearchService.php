@@ -358,8 +358,8 @@ class BooheeFoodSearchService extends BaseService
 			$response = $client->request('GET', $path, [
 				'query' => $queryParams,
 				'headers' => [
-					'Accept: application/json',
-					'Authorization: Bearer ' . $apiKey
+					'Accept' => 'application/json',
+					'Authorization' => 'Bearer ' . $apiKey
 				]
 			]);
 		}

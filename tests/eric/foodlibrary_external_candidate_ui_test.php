@@ -118,7 +118,10 @@ function run_node_render_contract($viewJs, $headerCount)
 		'FoodLibraryEscape',
 		'FoodLibraryIsExternalCandidate',
 		'FoodLibraryRenderName',
-		'FoodLibraryRenderExternalAction'
+		'FoodLibraryRenderExternalAction',
+		'FoodLibraryRenderLocalAction',
+		'FoodLibraryRenderAction',
+		'FoodLibraryParseAliases'
 	];
 
 	$script = <<<'JS'
@@ -191,10 +194,24 @@ check(!action.includes('data-provider="boo"hee'), 'provider attribute should not
 check(!action.includes("data-external-id=\"id '"), 'external id attribute should not contain unescaped single quotes');
 checkSame(FoodLibraryRenderExternalAction(externalRow, 'sort'), '', 'non-display external action should be empty');
 checkSame(FoodLibraryRenderExternalAction({ imported: true, id: 12, source: externalRow.source }, 'display'), '', 'local food action should be empty');
+checkSame(FoodLibraryRenderAction(externalRow, 'display'), action, 'external render action should delegate to external action');
 
 const localName = FoodLibraryRenderName('Local <Food>', 'display', { imported: true, id: 12 });
 check(localName.includes('/product/12'), 'local food should link to product URL');
 check(localName.includes('Local &lt;Food&gt;'), 'local food link text should be escaped');
+
+const localAction = FoodLibraryRenderLocalAction({ imported: true, id: 12 }, 'display');
+check(localAction.includes('food-library-edit-aliases'), 'local food should include alias edit button');
+check(localAction.includes('data-product-id="12"'), 'local alias edit action should include product id');
+check(localAction.includes('Aliases'), 'local alias edit action should include button text');
+checkSame(FoodLibraryRenderLocalAction({ imported: true, id: 12 }, 'sort'), '', 'non-display local action should be empty');
+checkSame(FoodLibraryRenderLocalAction(externalRow, 'display'), '', 'external row should not include local alias edit action');
+checkSame(FoodLibraryRenderAction({ imported: true, id: 12 }, 'display'), localAction, 'local render action should delegate to local action');
+
+const parsedAliases = FoodLibraryParseAliases(`番茄
+西红柿, 番茄
+`);
+checkSame(JSON.stringify(parsedAliases), JSON.stringify(['番茄', '西红柿']), 'aliases parser should split, trim, and dedupe aliases');
 
 checkSame(FoodLibraryColumns.length, Number(process.env.FOOD_LIBRARY_HEADER_COUNT), 'FoodLibraryColumns length should match Blade table header count');
 
@@ -239,13 +256,24 @@ check_contains($viewJs, 'FoodLibraryIsExternalCandidate', 'missing FoodLibraryIs
 check_contains($viewJs, 'FoodLibraryImportExternalCandidate', 'missing FoodLibraryImportExternalCandidate helper');
 check_contains($viewJs, 'FoodLibraryRenderName', 'missing FoodLibraryRenderName helper');
 check_contains($viewJs, 'FoodLibraryRenderExternalAction', 'missing FoodLibraryRenderExternalAction helper');
+check_contains($viewJs, 'FoodLibraryRenderLocalAction', 'missing FoodLibraryRenderLocalAction helper');
+check_contains($viewJs, 'FoodLibraryRenderAction', 'missing FoodLibraryRenderAction helper');
+check_contains($viewJs, 'FoodLibraryEditAliases', 'missing FoodLibraryEditAliases helper');
+check_contains($viewJs, 'FoodLibrarySaveAliases', 'missing FoodLibrarySaveAliases helper');
+check_contains($viewJs, 'FoodLibraryParseAliases', 'missing FoodLibraryParseAliases helper');
 check_contains($viewJs, 'eric/foods/import-from-source', 'missing import-from-source API call');
+check_contains($viewJs, 'eric/foods/" + encodeURIComponent(productId) + "/aliases', 'missing alias update API call');
 check_contains($viewJs, 'data-provider', 'missing provider data attribute');
 check_contains($viewJs, 'data-external-id', 'missing external id data attribute');
+check_contains($viewJs, 'data-product-id', 'missing alias edit product id data attribute');
 check_contains($viewJs, 'food-library-import-external', 'missing external import button class');
+check_contains($viewJs, 'food-library-edit-aliases', 'missing alias edit button class');
 check_contains($viewJs, 'FoodLibraryIsExternalCandidate(row)', 'missing guard preventing product links for external candidates');
 check_contains($view, "{{ \$__t('Actions') }}", 'missing Actions table header');
-check_contains($viewJs, 'FoodLibraryRenderExternalAction(row, type)', 'action column should use FoodLibraryRenderExternalAction');
+check_contains($view, 'food-library-aliases-modal', 'missing aliases modal');
+check_contains($view, 'food-library-aliases-input', 'missing aliases textarea');
+check_contains($view, 'food-library-aliases-save', 'missing aliases save button');
+check_contains($viewJs, 'FoodLibraryRenderAction(row, type)', 'action column should use FoodLibraryRenderAction');
 check_contains($viewJs, 'FoodLibraryRenderName(data, type, row)', 'name column should use FoodLibraryRenderName');
 check_contains($viewJs, 'var FoodLibraryColumns = [', 'missing FoodLibraryColumns array');
 check_contains($viewJs, '"columns": FoodLibraryColumns', 'DataTables should use FoodLibraryColumns');

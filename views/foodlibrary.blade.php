@@ -72,6 +72,41 @@
 		</table>
 	</div>
 </div>
+
+<div class="modal fade"
+	id="food-library-aliases-modal"
+	tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">{{ $__t('Aliases') }}</h5>
+				<button type="button"
+					class="close"
+					data-dismiss="modal">
+					<span>&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<input type="hidden"
+					id="food-library-aliases-product-id">
+				<div class="form-group">
+					<label for="food-library-aliases-input">{{ $__t('Aliases') }}</label>
+					<textarea class="form-control"
+						id="food-library-aliases-input"
+						rows="5"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button"
+					class="btn btn-secondary"
+					data-dismiss="modal">{{ $__t('Cancel') }}</button>
+				<button type="button"
+					class="btn btn-primary"
+					id="food-library-aliases-save">{{ $__t('Save') }}</button>
+			</div>
+		</div>
+	</div>
+</div>
 @endsection
 
 @section('viewJsName', 'foodlibrary')

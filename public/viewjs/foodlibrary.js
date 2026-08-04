@@ -41,6 +41,39 @@ function FoodLibraryImportExternalCandidate(provider, externalId)
 	});
 }
 
+function FoodLibraryParseAliases(value)
+{
+	return value.split(/[\r\n,]+/).map(function(alias)
+	{
+		return alias.trim();
+	}).filter(function(alias, index, aliases)
+	{
+		return alias !== "" && aliases.indexOf(alias) === index;
+	});
+}
+
+function FoodLibraryEditAliases(food)
+{
+	$("#food-library-aliases-product-id").val(food.id);
+	$("#food-library-aliases-input").val(Array.isArray(food.aliases) ? food.aliases.join("\n") : "");
+	$("#food-library-aliases-modal").modal("show");
+}
+
+function FoodLibrarySaveAliases()
+{
+	var productId = $("#food-library-aliases-product-id").val();
+	var aliases = FoodLibraryParseAliases($("#food-library-aliases-input").val());
+	Grocy.Api.Put("eric/foods/" + encodeURIComponent(productId) + "/aliases", { aliases: aliases }, function()
+	{
+		$("#food-library-aliases-modal").modal("hide");
+		foodLibraryTable.ajax.reload(null, false);
+	}, function(xhr)
+	{
+		console.error(xhr);
+		window.alert(__t("Error while saving aliases"));
+	});
+}
+
 function FoodLibraryNutritionValue(food, key)
 {
 	if (!food.nutrition)
@@ -129,6 +162,26 @@ function FoodLibraryRenderExternalAction(row, type)
 	return '<button type="button" class="btn btn-sm btn-success food-library-import-external" data-provider="' + FoodLibraryEscape(row.source.provider) + '" data-external-id="' + FoodLibraryEscape(row.source.external_id) + '">' + __t("Add") + '</button>';
 }
 
+function FoodLibraryRenderLocalAction(row, type)
+{
+	if (type !== "display" || FoodLibraryIsExternalCandidate(row))
+	{
+		return "";
+	}
+
+	return '<button type="button" class="btn btn-sm btn-outline-secondary food-library-edit-aliases" data-product-id="' + FoodLibraryEscape(row.id) + '">' + __t("Aliases") + '</button>';
+}
+
+function FoodLibraryRenderAction(row, type)
+{
+	if (FoodLibraryIsExternalCandidate(row))
+	{
+		return FoodLibraryRenderExternalAction(row, type);
+	}
+
+	return FoodLibraryRenderLocalAction(row, type);
+}
+
 var FoodLibraryColumns = [
 	{
 		data: "name",
@@ -197,7 +250,7 @@ var FoodLibraryColumns = [
 		orderable: false,
 		render: function(data, type, row)
 		{
-			return FoodLibraryRenderExternalAction(row, type);
+			return FoodLibraryRenderAction(row, type);
 		}
 	}
 ];
@@ -253,4 +306,22 @@ $("#food-library-search").on("keyup change", Delay(function()
 $("#food-library-table").on("click", ".food-library-import-external", function()
 {
 	FoodLibraryImportExternalCandidate($(this).attr("data-provider"), $(this).attr("data-external-id"));
+});
+
+$("#food-library-table").on("click", ".food-library-edit-aliases", function()
+{
+	var productId = Number($(this).attr("data-product-id"));
+	var food = foodLibraryTable.rows().data().toArray().find(function(row)
+	{
+		return Number(row.id) === productId;
+	});
+	if (food)
+	{
+		FoodLibraryEditAliases(food);
+	}
+});
+
+$("#food-library-aliases-save").on("click", function()
+{
+	FoodLibrarySaveAliases();
 });

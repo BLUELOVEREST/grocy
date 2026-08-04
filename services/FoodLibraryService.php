@@ -490,13 +490,19 @@ class FoodLibraryService extends BaseService
 
 	private function ResolveDefaultLocationId()
 	{
-		$location = $this->DB->locations()->where('active = 1')->order('id')->fetch();
-		if ($location === null)
+		$statement = DatabaseService::GetInstance()->GetDbConnectionRaw()->query('
+			SELECT id
+			FROM locations
+			WHERE active = 1
+			ORDER BY id
+			LIMIT 1');
+		$locationId = $statement === false ? false : $statement->fetchColumn();
+		if ($locationId === false)
 		{
 			throw new \InvalidArgumentException('Missing Grocy location');
 		}
 
-		return (int)$location->id;
+		return (int)$locationId;
 	}
 
 	public static function RequiredPayloadValueForTest(array $payload, $key)

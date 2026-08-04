@@ -192,9 +192,20 @@ class BooheeFoodSearchService extends BaseService
 	{
 		foreach ($keys as $key)
 		{
-			if (array_key_exists($key, $raw) && $raw[$key] !== null && !(is_string($raw[$key]) && trim($raw[$key]) === '') && is_numeric($raw[$key]))
+			if (!array_key_exists($key, $raw))
 			{
-				return (float)$raw[$key];
+				continue;
+			}
+
+			$value = $raw[$key];
+			if (is_array($value) && array_key_exists('value', $value))
+			{
+				$value = $value['value'];
+			}
+
+			if ($value !== null && !(is_string($value) && trim($value) === '') && is_numeric($value))
+			{
+				return (float)$value;
 			}
 		}
 
@@ -359,7 +370,7 @@ class BooheeFoodSearchService extends BaseService
 				'query' => $queryParams,
 				'headers' => [
 					'Accept' => 'application/json',
-					'Authorization' => 'Bearer ' . $apiKey
+					'X-Api-Key' => $apiKey
 				]
 			]);
 		}

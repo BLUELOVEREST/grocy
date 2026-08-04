@@ -22,6 +22,8 @@ class ChinaFoodCompositionImportService extends BaseService
 			throw new \InvalidArgumentException('No China Food JSON files found in: ' . $dataDir);
 		}
 
+		$nameCounts = $this->CountFoodNames($files);
+		$usedNames = [];
 		$imported = 0;
 		foreach ($files as $file)
 		{
@@ -45,11 +47,12 @@ class ChinaFoodCompositionImportService extends BaseService
 			foreach ($items as $rowIndex => $item)
 			{
 				$this->ValidateItem($item, $file, $rowIndex);
+				$name = $this->BuildImportName((string)$item['foodName'], $category, $nameCounts, $usedNames);
 
 				FoodLibraryService::GetInstance()->ImportFood([
 					'provider' => 'china-food-composition',
 					'external_id' => (string)$item['foodCode'],
-					'name' => (string)$item['foodName'],
+					'name' => $name,
 					'description' => $category,
 					'category' => $category,
 					'stock_unit' => 'g',
@@ -69,6 +72,35 @@ class ChinaFoodCompositionImportService extends BaseService
 			'files' => count($files),
 			'imported' => $imported
 		];
+	}
+
+	private function CountFoodNames(array $files)
+	{
+		$nameCounts = [];
+		foreach ($files as $file)
+		{
+			$items = json_decode(file_get_contents($file), true);
+			if (!is_array($items))
+			{
+				continue;
+			}
+
+			foreach ($items as $item)
+			{
+				if (!is_array($item) || !array_key_exists('foodName', $item) || !$this->IsImportScalar($item['foodName']))
+				{
+					continue;
+				}
+
+				$name = trim((string)$item['foodName']);
+				if ($name !== '')
+				{
+					$nameCounts[$name] = ($nameCounts[$name] ?? 0) + 1;
+				}
+			}
+		}
+
+		return $nameCounts;
 	}
 
 	private function ValidateItem($item, $file, $rowIndex)
@@ -96,10 +128,31 @@ class ChinaFoodCompositionImportService extends BaseService
 
 		if (!$this->IsImportScalar($item[$key]) || !is_numeric($item[$key]))
 		{
-			throw new \InvalidArgumentException('Invalid numeric nutrient ' . $key . ' in ' . $file . ' at row ' . $rowIndex . ' (foodCode=' . $item['foodCode'] . ', foodName=' . $item['foodName'] . ')');
+			return null;
 		}
 
 		return (float)$item[$key];
+	}
+
+	private function BuildImportName($foodName, $category, array $nameCounts, array &$usedNames)
+	{
+		$baseName = trim((string)$foodName);
+		$name = $baseName;
+		if (($nameCounts[$baseName] ?? 0) > 1)
+		{
+			$name = $baseName . ' [' . $category . ']';
+		}
+
+		$uniqueName = $name;
+		$counter = 2;
+		while (array_key_exists($uniqueName, $usedNames))
+		{
+			$uniqueName = $name . ' #' . $counter;
+			$counter++;
+		}
+
+		$usedNames[$uniqueName] = true;
+		return $uniqueName;
 	}
 
 	private function IsImportScalar($value)

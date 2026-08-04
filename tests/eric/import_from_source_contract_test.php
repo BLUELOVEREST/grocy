@@ -64,6 +64,13 @@ check_contains($service, 'is_string($payload[$key])', 'missing string payload va
 check_contains($service, 'is_int($payload[$key])', 'missing int payload validation');
 check_contains($service, 'is_float($payload[$key])', 'missing float payload validation');
 check_contains($service, 'RequiredPayloadValueForTest', 'missing RequiredPayloadValue test wrapper');
+check_contains($service, 'SELECT id', 'default location lookup should use direct SQL');
+check_contains($service, 'FROM locations', 'default location lookup should query locations directly');
+if (strpos($service, "->locations()->where('active = 1')->order('id')") !== false)
+{
+	fwrite(STDERR, "default location lookup should not use LessQL order('id')\n");
+	exit(1);
+}
 
 require_once __DIR__ . '/../../services/BaseService.php';
 require_once __DIR__ . '/../../services/FoodLibraryService.php';

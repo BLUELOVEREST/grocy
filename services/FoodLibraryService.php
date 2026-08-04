@@ -18,18 +18,38 @@ class FoodLibraryService extends BaseService
 			':prefixQuery' => $queryText . '%'
 		];
 		$where = 'p.active = 1 AND p.is_food = 1';
+		$aliasJoin = '';
+		$matchedAliasSelect = 'NULL AS matched_alias';
+		$groupBy = '';
+		$orderBy = 'p.name COLLATE NOCASE';
 
 		if ($queryText !== '')
 		{
+			$aliasJoin = '
+			LEFT JOIN eric_food_aliases efa
+				ON efa.product_id = p.id';
+			$matchedAliasSelect = '
+				(
+					SELECT alias
+					FROM eric_food_aliases
+					WHERE product_id = p.id
+						AND alias LIKE :query
+					ORDER BY alias COLLATE NOCASE
+					LIMIT 1
+				) AS matched_alias';
+			$groupBy = 'GROUP BY p.id';
+			$orderBy = '
+				CASE WHEN p.name COLLATE NOCASE = :exactQuery THEN 0 ELSE 1 END,
+				CASE WHEN p.name LIKE :prefixQuery THEN 0 ELSE 1 END,
+				CASE WHEN MAX(CASE WHEN efa.alias LIKE :query THEN 1 ELSE 0 END) = 1 THEN 0 ELSE 1 END,
+				p.name COLLATE NOCASE';
 			$where .= ' AND (p.name LIKE :query OR efa.alias LIKE :query)';
 		}
 
 		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
 		$countStatement = $pdo->prepare('
-			SELECT COUNT(DISTINCT p.id)
-			FROM products p
-			LEFT JOIN eric_food_aliases efa
-				ON efa.product_id = p.id
+			SELECT COUNT(' . ($queryText === '' ? 'p.id' : 'DISTINCT p.id') . ')
+			FROM products p' . $aliasJoin . '
 			WHERE ' . $where);
 		foreach ($queryText === '' ? [] : $searchParams as $key => $value)
 		{
@@ -55,18 +75,8 @@ class FoodLibraryService extends BaseService
 				efs.external_id,
 				efs.category,
 				efs.source_payload,
-				(
-					SELECT alias
-					FROM eric_food_aliases
-					WHERE product_id = p.id
-						AND :exactQuery <> \'\'
-						AND alias LIKE :query
-					ORDER BY alias COLLATE NOCASE
-					LIMIT 1
-				) AS matched_alias
-			FROM products p
-			LEFT JOIN eric_food_aliases efa
-				ON efa.product_id = p.id
+				' . $matchedAliasSelect . '
+			FROM products p' . $aliasJoin . '
 			LEFT JOIN product_nutrition pn
 				ON p.id = pn.product_id
 			LEFT JOIN quantity_units qu_stock
@@ -76,15 +86,12 @@ class FoodLibraryService extends BaseService
 			LEFT JOIN eric_food_sources efs
 				ON efs.id = (SELECT MIN(id) FROM eric_food_sources WHERE product_id = p.id)
 			WHERE ' . $where . '
-			GROUP BY p.id
+			' . $groupBy . '
 			ORDER BY
-				CASE WHEN p.name COLLATE NOCASE = :exactQuery THEN 0 ELSE 1 END,
-				CASE WHEN p.name LIKE :prefixQuery THEN 0 ELSE 1 END,
-				CASE WHEN MAX(CASE WHEN efa.alias LIKE :query THEN 1 ELSE 0 END) = 1 THEN 0 ELSE 1 END,
-				p.name COLLATE NOCASE
+				' . $orderBy . '
 			LIMIT :limit OFFSET :offset';
 		$statement = $pdo->prepare($sql);
-		foreach (array_merge($searchParams, $orderParams) as $key => $value)
+		foreach ($queryText === '' ? [] : array_merge($searchParams, $orderParams) as $key => $value)
 		{
 			$statement->bindValue($key, $value);
 		}
@@ -170,6 +177,11 @@ class FoodLibraryService extends BaseService
 		$seen = [];
 		foreach ($aliases as $alias)
 		{
+			if (!is_string($alias) && !is_int($alias) && !is_float($alias))
+			{
+				throw new \InvalidArgumentException('Aliases must contain only scalar text values');
+			}
+
 			$alias = trim((string)$alias);
 			if ($alias === '' || array_key_exists($alias, $seen))
 			{
@@ -204,32 +216,55 @@ class FoodLibraryService extends BaseService
 		$productId = (int)$productId;
 		$normalizedAliases = $this->NormalizeAliases($aliases);
 		$pdo = DatabaseService::GetInstance()->GetDbConnectionRaw();
+		$startedTransaction = !$pdo->inTransaction();
 
-		$productStatement = $pdo->prepare('
-			SELECT id
-			FROM products
-			WHERE id = :productId
-				AND active = 1
-				AND is_food = 1');
-		$productStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
-		$productStatement->execute();
-		if ($productStatement->fetchColumn() === false)
+		if ($startedTransaction)
 		{
-			throw new \InvalidArgumentException('Food product not found');
+			$pdo->beginTransaction();
 		}
 
-		$deleteStatement = $pdo->prepare('DELETE FROM eric_food_aliases WHERE product_id = :productId');
-		$deleteStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
-		$deleteStatement->execute();
-
-		$insertStatement = $pdo->prepare('
-			INSERT INTO eric_food_aliases (product_id, alias)
-			VALUES (:productId, :alias)');
-		foreach ($normalizedAliases as $alias)
+		try
 		{
-			$insertStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
-			$insertStatement->bindValue(':alias', $alias);
-			$insertStatement->execute();
+			$productStatement = $pdo->prepare('
+				SELECT id
+				FROM products
+				WHERE id = :productId
+					AND active = 1
+					AND is_food = 1');
+			$productStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+			$productStatement->execute();
+			if ($productStatement->fetchColumn() === false)
+			{
+				throw new \InvalidArgumentException('Food product not found');
+			}
+
+			$deleteStatement = $pdo->prepare('DELETE FROM eric_food_aliases WHERE product_id = :productId');
+			$deleteStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+			$deleteStatement->execute();
+
+			$insertStatement = $pdo->prepare('
+				INSERT INTO eric_food_aliases (product_id, alias)
+				VALUES (:productId, :alias)');
+			foreach ($normalizedAliases as $alias)
+			{
+				$insertStatement->bindValue(':productId', $productId, \PDO::PARAM_INT);
+				$insertStatement->bindValue(':alias', $alias);
+				$insertStatement->execute();
+			}
+
+			if ($startedTransaction)
+			{
+				$pdo->commit();
+			}
+		}
+		catch (\Throwable $ex)
+		{
+			if ($startedTransaction && $pdo->inTransaction())
+			{
+				$pdo->rollback();
+			}
+
+			throw $ex;
 		}
 
 		return $this->GetFoodAliases($productId);

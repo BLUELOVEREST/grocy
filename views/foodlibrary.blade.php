@@ -65,6 +65,7 @@
 					<th>{{ $__t('Carbohydrates') }}</th>
 					<th>{{ $__t('Nutrition basis') }}</th>
 					<th>{{ $__t('Source') }}</th>
+					<th>{{ $__t('Actions') }}</th>
 				</tr>
 			</thead>
 			<tbody class="d-none"></tbody>

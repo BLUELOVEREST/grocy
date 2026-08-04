@@ -24,6 +24,23 @@ function FoodLibraryFormatNumber(value)
 	return numberValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: Grocy.UserSettings.stock_decimal_places_amounts });
 }
 
+function FoodLibraryIsExternalCandidate(food)
+{
+	return food && food.imported === false && food.source && food.source.provider && food.source.external_id;
+}
+
+function FoodLibraryImportExternalCandidate(provider, externalId)
+{
+	Grocy.Api.Post("eric/foods/import-from-source", { provider: provider, external_id: externalId }, function()
+	{
+		foodLibraryTable.ajax.reload(null, false);
+	}, function(xhr)
+	{
+		console.error(xhr);
+		window.alert(__t("Error while importing the selected food"));
+	});
+}
+
 function FoodLibraryNutritionValue(food, key)
 {
 	if (!food.nutrition)
@@ -130,6 +147,11 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 					return data;
 				}
 
+				if (FoodLibraryIsExternalCandidate(row))
+				{
+					return FoodLibraryEscape(data) + ' <span class="badge badge-info">Boohee</span>';
+				}
+
 				return '<a href="' + U("/product/" + encodeURIComponent(row.id.toString())) + '">' + FoodLibraryEscape(data) + '</a>';
 			}
 		},
@@ -187,6 +209,19 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 			{
 				return FoodLibrarySource(row);
 			}
+		},
+		{
+			data: null,
+			orderable: false,
+			render: function(data, type, row)
+			{
+				if (type !== "display" || !FoodLibraryIsExternalCandidate(row))
+				{
+					return "";
+				}
+
+				return '<button type="button" class="btn btn-sm btn-success food-library-import-external" data-provider="' + FoodLibraryEscape(row.source.provider) + '" data-external-id="' + FoodLibraryEscape(row.source.external_id) + '">' + __t("Add") + '</button>';
+			}
 		}
 	],
 	"columnDefs": [
@@ -202,3 +237,8 @@ $("#food-library-search").on("keyup change", Delay(function()
 {
 	foodLibraryTable.ajax.reload();
 }, Grocy.FormFocusDelay));
+
+$("#food-library-table").on("click", ".food-library-import-external", function()
+{
+	FoodLibraryImportExternalCandidate($(this).attr("data-provider"), $(this).attr("data-external-id"));
+});

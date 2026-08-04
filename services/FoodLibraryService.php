@@ -350,8 +350,8 @@ class FoodLibraryService extends BaseService
 
 	public function ImportFromSource(array $payload)
 	{
-		$provider = $this->RequiredPayloadValue($payload, 'provider');
-		$externalId = $this->RequiredPayloadValue($payload, 'external_id');
+		$provider = self::RequiredPayloadValue($payload, 'provider');
+		$externalId = self::RequiredPayloadValue($payload, 'external_id');
 		switch ($provider)
 		{
 			case 'boohee':
@@ -363,9 +363,9 @@ class FoodLibraryService extends BaseService
 
 	public function ImportFood(array $payload)
 	{
-		$provider = $this->RequiredPayloadValue($payload, 'provider');
-		$externalId = $this->RequiredPayloadValue($payload, 'external_id');
-		$name = $this->RequiredPayloadValue($payload, 'name');
+		$provider = self::RequiredPayloadValue($payload, 'provider');
+		$externalId = self::RequiredPayloadValue($payload, 'external_id');
+		$name = self::RequiredPayloadValue($payload, 'name');
 		$stockUnitName = $payload['stock_unit'] ?? 'g';
 		$stockUnitId = $this->ResolveQuantityUnitId($stockUnitName);
 		$basisUnitId = $this->ResolveBasisQuantityUnitId($payload);
@@ -499,7 +499,12 @@ class FoodLibraryService extends BaseService
 		return (int)$location->id;
 	}
 
-	private function RequiredPayloadValue(array $payload, $key)
+	public static function RequiredPayloadValueForTest(array $payload, $key)
+	{
+		return self::RequiredPayloadValue($payload, $key);
+	}
+
+	private static function RequiredPayloadValue(array $payload, $key)
 	{
 		if (!array_key_exists($key, $payload) || (!is_string($payload[$key]) && !is_int($payload[$key]) && !is_float($payload[$key])))
 		{

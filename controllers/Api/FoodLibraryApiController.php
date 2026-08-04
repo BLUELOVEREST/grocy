@@ -33,6 +33,30 @@ class FoodLibraryApiController extends BaseApiController
 		}
 	}
 
+	public function UpdateAliases(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_RECIPES);
+
+		try
+		{
+			$payload = $request->getParsedBody();
+			if (!is_array($payload))
+			{
+				$payload = json_decode($request->getBody()->getContents(), true);
+			}
+			if (!is_array($payload) || !array_key_exists('aliases', $payload))
+			{
+				return $this->GenericErrorResponse($response, 'Invalid request body', 400);
+			}
+
+			return $this->ApiResponse($response, FoodLibraryService::GetInstance()->UpdateAliases($args['productId'], $payload['aliases']));
+		}
+		catch (\InvalidArgumentException $ex)
+		{
+			return $this->GenericErrorResponse($response, $ex->getMessage(), 400);
+		}
+	}
+
 	public function Import(Request $request, Response $response, array $args)
 	{
 		User::CheckPermission($request, User::PERMISSION_RECIPES);

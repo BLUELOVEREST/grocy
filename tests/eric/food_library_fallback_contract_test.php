@@ -6,6 +6,12 @@ if ($source === false)
 	fwrite(STDERR, "failed to read FoodLibraryService.php\n");
 	exit(1);
 }
+$controllerSource = file_get_contents(__DIR__ . '/../../controllers/Api/FoodLibraryApiController.php');
+if ($controllerSource === false)
+{
+	fwrite(STDERR, "failed to read FoodLibraryApiController.php\n");
+	exit(1);
+}
 
 function check_contains($source, $needle, $message)
 {
@@ -25,6 +31,8 @@ check_contains($source, "'used' => false", 'missing fallback used=false');
 check_contains($source, 'GROCY_BOOHEE_API_KEY', 'missing Boohee API key gate');
 check_contains($source, "trim((string)GROCY_BOOHEE_API_KEY) !== ''", 'missing non-empty Boohee API key check');
 check_contains($source, '(int)($localResult[\'pagination\'][\'totalCount\'] ?? 0)', 'missing local totalCount fallback gate');
+check_contains($source, '$includeExternal', 'missing includeExternal search option');
+check_contains($controllerSource, 'include_external', 'missing include_external API query option');
 check_contains($source, 'is_array($localResult[\'foods\'] ?? null) ? $localResult[\'foods\'] : []', 'missing foods array normalization');
 
 require_once __DIR__ . '/../../services/BaseService.php';
@@ -72,6 +80,22 @@ if (!array_key_exists('foods', $result) || $result['foods'] !== [])
 if (($result['fallback']['used'] ?? null) !== false)
 {
 	fwrite(STDERR, "local totalCount > 0 should not use fallback when current page is empty\n");
+	exit(1);
+}
+
+try
+{
+	$includeExternalResult = $service->SearchFoodsWithFallback('rice', 2, 20, true);
+}
+catch (Throwable $ex)
+{
+	fwrite(STDERR, 'includeExternal should not fail due to method signature mismatch: ' . $ex->getMessage() . "\n");
+	exit(1);
+}
+
+if (($includeExternalResult['fallback']['used'] ?? null) !== true)
+{
+	fwrite(STDERR, "includeExternal=true should bypass the local totalCount gate and attempt fallback\n");
 	exit(1);
 }
 

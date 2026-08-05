@@ -4,9 +4,9 @@ namespace Grocy\Services;
 
 class FoodLibraryService extends BaseService
 {
-	public function SearchFoods($query = null, $page = 1, $pageSize = 20)
+	public function SearchFoods($query = null, $page = 1, $pageSize = 20, $includeExternal = false)
 	{
-		return $this->SearchFoodsWithFallback($query, $page, $pageSize);
+		return $this->SearchFoodsWithFallback($query, $page, $pageSize, $includeExternal);
 	}
 
 	public function SearchLocalFoods($query = null, $page = 1, $pageSize = 20)
@@ -115,9 +115,10 @@ class FoodLibraryService extends BaseService
 		];
 	}
 
-	public function SearchFoodsWithFallback($query = null, $page = 1, $pageSize = 20)
+	public function SearchFoodsWithFallback($query = null, $page = 1, $pageSize = 20, $includeExternal = false)
 	{
 		$queryText = $query === null ? '' : trim((string)$query);
+		$includeExternal = filter_var($includeExternal, FILTER_VALIDATE_BOOLEAN);
 		$localResult = $this->SearchLocalFoods($query, $page, $pageSize);
 		$localResult['foods'] = is_array($localResult['foods'] ?? null) ? $localResult['foods'] : [];
 		$localTotalCount = (int)($localResult['pagination']['totalCount'] ?? 0);
@@ -141,7 +142,7 @@ class FoodLibraryService extends BaseService
 			]
 		]);
 
-		if ($queryText === '' || $localTotalCount > 0 || (defined('GROCY_BOOHEE_FALLBACK_ENABLED') && GROCY_BOOHEE_FALLBACK_ENABLED === false))
+		if ($queryText === '' || (!$includeExternal && $localTotalCount > 0) || (defined('GROCY_BOOHEE_FALLBACK_ENABLED') && GROCY_BOOHEE_FALLBACK_ENABLED === false))
 		{
 			return $localResult;
 		}

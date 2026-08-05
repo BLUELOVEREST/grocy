@@ -16,7 +16,8 @@ class FoodLibraryApiController extends BaseApiController
 		$query = $request->getQueryParams()['query'] ?? '';
 		$page = $request->getQueryParams()['page'] ?? 1;
 		$pageSize = $request->getQueryParams()['page_size'] ?? 20;
-		return $this->ApiResponse($response, FoodLibraryService::GetInstance()->SearchFoods($query, $page, $pageSize));
+		$includeExternal = $request->getQueryParams()['include_external'] ?? false;
+		return $this->ApiResponse($response, FoodLibraryService::GetInstance()->SearchFoods($query, $page, $pageSize, $includeExternal));
 	}
 
 	public function Get(Request $request, Response $response, array $args)

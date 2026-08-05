@@ -268,6 +268,10 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 		var page = Math.floor(data.start / pageSize) + 1;
 		var query = $("#food-library-search").val();
 		var apiFunction = "eric/foods/search?query=" + encodeURIComponent(query) + "&page=" + encodeURIComponent(page) + "&page_size=" + encodeURIComponent(pageSize);
+		if (FoodLibraryIncludeExternal)
+		{
+			apiFunction += "&include_external=1";
+		}
 
 		Grocy.Api.Get(apiFunction, function(result)
 		{
@@ -295,11 +299,14 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 	].concat($.fn.dataTable.defaults.columnDefs)
 });
 
+var FoodLibraryIncludeExternal = false;
+
 $("#food-library-table tbody").removeClass("d-none");
 foodLibraryTable.columns.adjust().draw();
 
-function FoodLibraryRunSearch()
+function FoodLibraryRunSearch(includeExternal)
 {
+	FoodLibraryIncludeExternal = includeExternal === true;
 	foodLibraryTable.ajax.reload();
 }
 
@@ -308,13 +315,18 @@ $("#food-library-search").on("keydown", function(event)
 	if (event.key === "Enter")
 	{
 		event.preventDefault();
-		FoodLibraryRunSearch();
+		FoodLibraryRunSearch(false);
 	}
 });
 
 $("#food-library-search-button").on("click", function()
 {
-	FoodLibraryRunSearch();
+	FoodLibraryRunSearch(false);
+});
+
+$("#food-library-external-search-button").on("click", function()
+{
+	FoodLibraryRunSearch(true);
 });
 
 $("#food-library-table").on("click", ".food-library-import-external", function()

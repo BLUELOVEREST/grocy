@@ -52,6 +52,14 @@
 				id="food-library-search"
 				class="form-control"
 				placeholder="{{ $__t('Search') }}">
+			<div class="input-group-append">
+				<button type="button"
+					class="btn btn-outline-secondary"
+					id="food-library-external-search-button"
+					title="{{ $__t('Search Boohee') }}">
+					{{ $__t('Boohee') }}
+				</button>
+			</div>
 		</div>
 	</div>
 </div>

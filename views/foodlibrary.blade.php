@@ -41,7 +41,12 @@
 	<div class="col-12 col-md-6 col-xl-3">
 		<div class="input-group">
 			<div class="input-group-prepend">
-				<span class="input-group-text"><i class="fa-solid fa-search"></i></span>
+				<button type="button"
+					class="btn btn-outline-secondary"
+					id="food-library-search-button"
+					title="{{ $__t('Search') }}">
+					<i class="fa-solid fa-search"></i>
+				</button>
 			</div>
 			<input type="text"
 				id="food-library-search"

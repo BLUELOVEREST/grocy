@@ -298,10 +298,24 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 $("#food-library-table tbody").removeClass("d-none");
 foodLibraryTable.columns.adjust().draw();
 
-$("#food-library-search").on("keyup change", Delay(function()
+function FoodLibraryRunSearch()
 {
 	foodLibraryTable.ajax.reload();
-}, Grocy.FormFocusDelay));
+}
+
+$("#food-library-search").on("keydown", function(event)
+{
+	if (event.key === "Enter")
+	{
+		event.preventDefault();
+		FoodLibraryRunSearch();
+	}
+});
+
+$("#food-library-search-button").on("click", function()
+{
+	FoodLibraryRunSearch();
+});
 
 $("#food-library-table").on("click", ".food-library-import-external", function()
 {

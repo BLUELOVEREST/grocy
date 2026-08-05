@@ -279,6 +279,15 @@ check_contains($viewJs, 'var FoodLibraryColumns = [', 'missing FoodLibraryColumn
 check_contains($viewJs, '"columns": FoodLibraryColumns', 'DataTables should use FoodLibraryColumns');
 check_contains($viewJs, 'FoodLibraryEscape(row.source.provider)', 'provider attribute should use FoodLibraryEscape');
 check_contains($viewJs, 'FoodLibraryEscape(row.source.external_id)', 'external id attribute should use FoodLibraryEscape');
+check_contains($view, 'food-library-search-button', 'missing explicit food library search button');
+check_contains($viewJs, 'FoodLibraryRunSearch', 'missing explicit search trigger helper');
+check_contains($viewJs, '$("#food-library-search-button").on("click"', 'search button should trigger food library search');
+check_contains($viewJs, 'if (event.key === "Enter")', 'food library search input should submit on Enter');
+if (strpos($viewJs, '$("#food-library-search").on("keyup change"') !== false || strpos($viewJs, '$("#food-library-search").on("keyup"') !== false)
+{
+	fwrite(STDERR, "food library search must not reload on keyup because that burns remote fallback API calls\n");
+	exit(1);
+}
 check_match('/function FoodLibraryRenderName[\s\S]*FoodLibraryIsExternalCandidate\(row\)[\s\S]*return \'<a href="/', $viewJs, 'external candidate branch should appear before product link branch');
 check_match('/function FoodLibraryRenderName[\s\S]*FoodLibraryIsExternalCandidate\(row\)[\s\S]*Boohee[\s\S]*return \'<a href="/', $viewJs, 'external branch should render badge before product link fallback');
 

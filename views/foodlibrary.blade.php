@@ -74,8 +74,21 @@
 					<th>{{ $__t('Aliases') }}</th>
 					<th>{{ $__t('Energy') }}</th>
 					<th>{{ $__t('Protein') }}</th>
+					<th>{{ $__t('Carbs') }}</th>
 					<th>{{ $__t('Fat') }}</th>
-					<th>{{ $__t('Carbohydrates') }}</th>
+					<th>{{ $__t('Saturated fat') }}</th>
+					<th>{{ $__t('Polyunsaturated fat') }}</th>
+					<th>{{ $__t('Monounsaturated fat') }}</th>
+					<th>{{ $__t('Trans fat') }}</th>
+					<th>{{ $__t('Cholesterol') }}</th>
+					<th>{{ $__t('Sodium') }}</th>
+					<th>{{ $__t('Potassium') }}</th>
+					<th>{{ $__t('Dietary fiber') }}</th>
+					<th>{{ $__t('Sugars') }}</th>
+					<th>{{ $__t('Vitamin A') }}</th>
+					<th>{{ $__t('Vitamin C') }}</th>
+					<th>{{ $__t('Calcium') }}</th>
+					<th>{{ $__t('Iron') }}</th>
 					<th>{{ $__t('Nutrition basis') }}</th>
 					<th>{{ $__t('Source') }}</th>
 					<th>{{ $__t('Actions') }}</th>

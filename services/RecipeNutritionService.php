@@ -168,16 +168,29 @@ class RecipeNutritionService extends BaseService
 
 	private function EmptyNutrition()
 	{
-		return [
-			'calories' => 0.0,
-			'protein' => 0.0,
-			'fat' => 0.0,
-			'carbohydrates' => 0.0
-		];
+		return array_fill_keys($this->NutrientKeys(), 0.0);
 	}
 
 	private function NutrientKeys()
 	{
-		return ['calories', 'protein', 'fat', 'carbohydrates'];
+		return [
+			'calories',
+			'protein',
+			'carbs',
+			'fat',
+			'saturated_fat',
+			'polyunsaturated_fat',
+			'monounsaturated_fat',
+			'trans_fat',
+			'cholesterol',
+			'sodium',
+			'potassium',
+			'dietary_fiber',
+			'sugars',
+			'vitamin_a',
+			'vitamin_c',
+			'calcium',
+			'iron'
+		];
 	}
 }

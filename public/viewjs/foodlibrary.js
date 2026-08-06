@@ -221,6 +221,13 @@ var FoodLibraryColumns = [
 		data: null,
 		render: function(data, type, row)
 		{
+			return FoodLibraryNutritionValue(row, "carbs");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
 			return FoodLibraryNutritionValue(row, "fat");
 		}
 	},
@@ -228,7 +235,91 @@ var FoodLibraryColumns = [
 		data: null,
 		render: function(data, type, row)
 		{
-			return FoodLibraryNutritionValue(row, "carbohydrates");
+			return FoodLibraryNutritionValue(row, "saturated_fat");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "polyunsaturated_fat");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "monounsaturated_fat");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "trans_fat");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "cholesterol");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "sodium");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "potassium");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "dietary_fiber");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "sugars");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "vitamin_a");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "vitamin_c");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "calcium");
+		}
+	},
+	{
+		data: null,
+		render: function(data, type, row)
+		{
+			return FoodLibraryNutritionValue(row, "iron");
 		}
 	},
 	{

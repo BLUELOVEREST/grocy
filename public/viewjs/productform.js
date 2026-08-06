@@ -1,4 +1,24 @@
-﻿function redirectAfterProductSave(productId, location)
+﻿var FoodNutritionNutrientFields = [
+	{ key: 'calories', unit: function() { return Grocy.EnergyUnit; } },
+	{ key: 'protein', unit: 'g' },
+	{ key: 'carbs', unit: 'g' },
+	{ key: 'fat', unit: 'g' },
+	{ key: 'saturated_fat', unit: 'g' },
+	{ key: 'polyunsaturated_fat', unit: 'g' },
+	{ key: 'monounsaturated_fat', unit: 'g' },
+	{ key: 'trans_fat', unit: 'g' },
+	{ key: 'cholesterol', unit: 'mg' },
+	{ key: 'sodium', unit: 'mg' },
+	{ key: 'potassium', unit: 'mg' },
+	{ key: 'dietary_fiber', unit: 'g' },
+	{ key: 'sugars', unit: 'g' },
+	{ key: 'vitamin_a', unit: 'mcg' },
+	{ key: 'vitamin_c', unit: 'mg' },
+	{ key: 'calcium', unit: 'mg' },
+	{ key: 'iron', unit: 'mg' }
+];
+
+function redirectAfterProductSave(productId, location)
 {
 	if (Grocy.ProductEditFormRedirectUri == "reload")
 	{
@@ -100,17 +120,19 @@ function setFoodNutritionLoadComplete(isComplete)
 function collectFoodNutritionPayload()
 {
 	var stockToBasisFactor = $('#stock-to-basis-conversion-fields').hasClass('d-none') || $('#stock_to_basis_factor').val() === '' ? null : $('#stock_to_basis_factor').val();
-
-	return {
+	var payload = {
 		is_food: $('#is_food').prop('checked'),
 		basis_amount: $('#nutrition_basis_amount').val(),
 		basis_qu_id: $('#nutrition_basis_qu_id').val(),
-		calories: $('#nutrition_calories').val(),
-		protein: $('#nutrition_protein').val(),
-		fat: $('#nutrition_fat').val(),
-		carbohydrates: $('#nutrition_carbohydrates').val(),
 		stock_to_basis_factor: stockToBasisFactor
 	};
+
+	FoodNutritionNutrientFields.forEach(function(field)
+	{
+		payload[field.key] = $('#nutrition_' + field.key).val();
+	});
+
+	return payload;
 }
 
 function saveFoodNutrition(productId, success, error)
@@ -163,12 +185,9 @@ function removeFoodNutritionFieldsFromProductData(jsonData)
 		'protein',
 		'fat',
 		'carbohydrates',
+		'carbs',
 		'nutrition_basis_amount',
 		'nutrition_basis_qu_id',
-		'nutrition_calories',
-		'nutrition_protein',
-		'nutrition_fat',
-		'nutrition_carbohydrates',
 		'stock_to_basis_factor'
 	].forEach(function(field)
 	{
@@ -176,6 +195,11 @@ function removeFoodNutritionFieldsFromProductData(jsonData)
 		{
 			delete jsonData[field];
 		}
+	});
+
+	FoodNutritionNutrientFields.forEach(function(field)
+	{
+		delete jsonData['nutrition_' + field.key];
 	});
 }
 
@@ -188,10 +212,10 @@ function populateFoodNutritionFields(result, fallbackProduct)
 	{
 		$('#nutrition_basis_amount').val(result.nutrition.basis_amount);
 		$('#nutrition_basis_qu_id').val(result.nutrition.basis_qu_id);
-		$('#nutrition_calories').val(result.nutrition.calories);
-		$('#nutrition_protein').val(result.nutrition.protein);
-		$('#nutrition_fat').val(result.nutrition.fat);
-		$('#nutrition_carbohydrates').val(result.nutrition.carbohydrates);
+		FoodNutritionNutrientFields.forEach(function(field)
+		{
+			$('#nutrition_' + field.key).val(result.nutrition[field.key]);
+		});
 	}
 	else
 	{
@@ -203,22 +227,13 @@ function populateFoodNutritionFields(result, fallbackProduct)
 		{
 			$('#nutrition_basis_qu_id').val(fallbackProduct.basis_qu_id);
 		}
-		if (fallbackProduct.calories != null)
+		FoodNutritionNutrientFields.forEach(function(field)
 		{
-			$('#nutrition_calories').val(fallbackProduct.calories);
-		}
-		if (fallbackProduct.protein != null)
-		{
-			$('#nutrition_protein').val(fallbackProduct.protein);
-		}
-		if (fallbackProduct.fat != null)
-		{
-			$('#nutrition_fat').val(fallbackProduct.fat);
-		}
-		if (fallbackProduct.carbohydrates != null)
-		{
-			$('#nutrition_carbohydrates').val(fallbackProduct.carbohydrates);
-		}
+			if (fallbackProduct[field.key] != null)
+			{
+				$('#nutrition_' + field.key).val(fallbackProduct[field.key]);
+			}
+		});
 	}
 
 	if (result.stock_to_basis_conversion != null)
@@ -262,10 +277,10 @@ function refreshNutritionUnitLabels()
 	var stockUnit = selectedQuantityUnitText('#qu_id_stock');
 
 	$('#nutrition-basis-description').text((basisAmount || '?') + ' ' + (basisUnit || '?'));
-	$('#nutrition_energy_qu_info').text(Grocy.EnergyUnit);
-	$('#nutrition_protein_qu_info').text('g');
-	$('#nutrition_fat_qu_info').text('g');
-	$('#nutrition_carbohydrates_qu_info').text('g');
+	FoodNutritionNutrientFields.forEach(function(field)
+	{
+		$('#nutrition_' + field.key + '_qu_info').text(typeof field.unit === 'function' ? field.unit() : field.unit);
+	});
 	$('#stock_to_basis_factor_qu_info').text(basisUnit && stockUnit ? basisUnit + ' / ' + stockUnit : '');
 	$('#stock-to-basis-stock-unit').text(stockUnit);
 	$('#stock-to-basis-factor-label').text($('#stock_to_basis_factor').val() || '?');
@@ -880,7 +895,7 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 				calories: sourceProduct.calories,
 				protein: sourceProduct.protein,
 				fat: sourceProduct.fat,
-				carbohydrates: sourceProduct.carbohydrates
+				carbs: sourceProduct.carbohydrates
 			});
 			$("#default_best_before_days_after_freezing").val(sourceProduct.default_best_before_days_after_freezing);
 			$("#default_best_before_days_after_thawing").val(sourceProduct.default_best_before_days_after_thawing);

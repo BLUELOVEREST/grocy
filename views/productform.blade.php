@@ -58,7 +58,7 @@
 				'calories' => $product->calories,
 				'protein' => $product->protein,
 				'fat' => $product->fat,
-				'carbohydrates' => $product->carbohydrates
+				'carbs' => $product->carbohydrates
 			]) !!};
 		</script>
 
@@ -563,7 +563,7 @@
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
 				'value' => 0,
 				'hint' => $__t('Per nutrition basis'),
-				'contextInfoId' => 'nutrition_energy_qu_info',
+				'contextInfoId' => 'nutrition_calories_qu_info',
 				'isRequired' => false,
 				'noNameAttribute' => true,
 				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
@@ -596,17 +596,64 @@
 				))
 
 				@include('components.numberpicker', array(
-				'id' => 'nutrition_carbohydrates',
-				'label' => 'Carbohydrates',
+				'id' => 'nutrition_carbs',
+				'label' => 'Carbs',
 				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
 				'decimals' => $userSettings['stock_decimal_places_amounts'],
 				'value' => 0,
 				'hint' => $__t('Per nutrition basis'),
-				'contextInfoId' => 'nutrition_carbohydrates_qu_info',
+				'contextInfoId' => 'nutrition_carbs_qu_info',
 				'isRequired' => false,
 				'noNameAttribute' => true,
 				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
 				))
+
+				<h5>{{ $__t('Fat details') }}</h5>
+				@foreach([
+					['key' => 'saturated_fat', 'label' => 'Saturated fat', 'unit' => 'g'],
+					['key' => 'polyunsaturated_fat', 'label' => 'Polyunsaturated fat', 'unit' => 'g'],
+					['key' => 'monounsaturated_fat', 'label' => 'Monounsaturated fat', 'unit' => 'g'],
+					['key' => 'trans_fat', 'label' => 'Trans fat', 'unit' => 'g']
+				] as $field)
+				@include('components.numberpicker', array(
+				'id' => 'nutrition_' . $field['key'],
+				'label' => $field['label'],
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => '',
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_' . $field['key'] . '_qu_info',
+				'isRequired' => false,
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
+				))
+				@endforeach
+
+				<h5>{{ $__t('Other nutrients') }}</h5>
+				@foreach([
+					['key' => 'cholesterol', 'label' => 'Cholesterol', 'unit' => 'mg'],
+					['key' => 'sodium', 'label' => 'Sodium', 'unit' => 'mg'],
+					['key' => 'potassium', 'label' => 'Potassium', 'unit' => 'mg'],
+					['key' => 'dietary_fiber', 'label' => 'Dietary fiber', 'unit' => 'g'],
+					['key' => 'sugars', 'label' => 'Sugars', 'unit' => 'g'],
+					['key' => 'vitamin_a', 'label' => 'Vitamin A', 'unit' => 'mcg'],
+					['key' => 'vitamin_c', 'label' => 'Vitamin C', 'unit' => 'mg'],
+					['key' => 'calcium', 'label' => 'Calcium', 'unit' => 'mg'],
+					['key' => 'iron', 'label' => 'Iron', 'unit' => 'mg']
+				] as $field)
+				@include('components.numberpicker', array(
+				'id' => 'nutrition_' . $field['key'],
+				'label' => $field['label'],
+				'min' => '0.' . str_repeat('0', $userSettings['stock_decimal_places_amounts']),
+				'decimals' => $userSettings['stock_decimal_places_amounts'],
+				'value' => '',
+				'hint' => $__t('Per nutrition basis'),
+				'contextInfoId' => 'nutrition_' . $field['key'] . '_qu_info',
+				'isRequired' => false,
+				'noNameAttribute' => true,
+				'additionalCssClasses' => 'locale-number-input locale-number-quantity-amount food-nutrition-input'
+				))
+				@endforeach
 
 				<div id="stock-to-basis-conversion-fields">
 					@include('components.numberpicker', array(

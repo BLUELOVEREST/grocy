@@ -81,12 +81,12 @@ class ProductNutritionService extends BaseService
 		$values = [
 			'product_id' => $productId,
 			'basis_amount' => $basisAmount,
-			'basis_qu_id' => $basisQuId,
-			'calories' => $this->NullableFloat($payload, 'calories'),
-			'protein' => $this->NullableFloat($payload, 'protein'),
-			'fat' => $this->NullableFloat($payload, 'fat'),
-			'carbohydrates' => $this->NullableFloat($payload, 'carbohydrates')
+			'basis_qu_id' => $basisQuId
 		];
+		foreach ($this->NutrientKeys() as $key)
+		{
+			$values[$key] = $this->NullableFloat($payload, $key);
+		}
 		$stockToBasisFactor = $this->NormalizeStockToBasisFactor((int)$product->qu_id_stock, $basisQuId, $payload);
 		$stockToBasisFactorProvided = array_key_exists('stock_to_basis_factor', $payload);
 
@@ -182,5 +182,28 @@ class ProductNutritionService extends BaseService
 		{
 			$existing->update($values);
 		}
+	}
+
+	private function NutrientKeys()
+	{
+		return [
+			'calories',
+			'protein',
+			'carbs',
+			'fat',
+			'saturated_fat',
+			'polyunsaturated_fat',
+			'monounsaturated_fat',
+			'trans_fat',
+			'cholesterol',
+			'sodium',
+			'potassium',
+			'dietary_fiber',
+			'sugars',
+			'vitamin_a',
+			'vitamin_c',
+			'calcium',
+			'iron'
+		];
 	}
 }

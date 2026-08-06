@@ -71,7 +71,20 @@ class FoodLibraryService extends BaseService
 				pn.calories AS nutrition_calories,
 				pn.protein AS nutrition_protein,
 				pn.fat AS nutrition_fat,
-				pn.carbohydrates AS nutrition_carbohydrates,
+				pn.carbs AS nutrition_carbs,
+				pn.saturated_fat AS nutrition_saturated_fat,
+				pn.polyunsaturated_fat AS nutrition_polyunsaturated_fat,
+				pn.monounsaturated_fat AS nutrition_monounsaturated_fat,
+				pn.trans_fat AS nutrition_trans_fat,
+				pn.cholesterol AS nutrition_cholesterol,
+				pn.sodium AS nutrition_sodium,
+				pn.potassium AS nutrition_potassium,
+				pn.dietary_fiber AS nutrition_dietary_fiber,
+				pn.sugars AS nutrition_sugars,
+				pn.vitamin_a AS nutrition_vitamin_a,
+				pn.vitamin_c AS nutrition_vitamin_c,
+				pn.calcium AS nutrition_calcium,
+				pn.iron AS nutrition_iron,
 				qu_stock.name AS stock_unit_name,
 				qu_stock.name_plural AS stock_unit_name_plural,
 				qu_basis.name AS basis_unit_name,
@@ -190,7 +203,20 @@ class FoodLibraryService extends BaseService
 				pn.calories AS nutrition_calories,
 				pn.protein AS nutrition_protein,
 				pn.fat AS nutrition_fat,
-				pn.carbohydrates AS nutrition_carbohydrates,
+				pn.carbs AS nutrition_carbs,
+				pn.saturated_fat AS nutrition_saturated_fat,
+				pn.polyunsaturated_fat AS nutrition_polyunsaturated_fat,
+				pn.monounsaturated_fat AS nutrition_monounsaturated_fat,
+				pn.trans_fat AS nutrition_trans_fat,
+				pn.cholesterol AS nutrition_cholesterol,
+				pn.sodium AS nutrition_sodium,
+				pn.potassium AS nutrition_potassium,
+				pn.dietary_fiber AS nutrition_dietary_fiber,
+				pn.sugars AS nutrition_sugars,
+				pn.vitamin_a AS nutrition_vitamin_a,
+				pn.vitamin_c AS nutrition_vitamin_c,
+				pn.calcium AS nutrition_calcium,
+				pn.iron AS nutrition_iron,
 				qu_stock.name AS stock_unit_name,
 				qu_stock.name_plural AS stock_unit_name_plural,
 				qu_basis.name AS basis_unit_name,
@@ -535,7 +561,7 @@ class FoodLibraryService extends BaseService
 			'basis_qu_id' => (int)$basisUnitId
 		];
 
-		foreach (['calories', 'protein', 'fat', 'carbohydrates', 'stock_to_basis_factor'] as $key)
+		foreach (array_merge($this->NutrientKeys(), ['stock_to_basis_factor']) as $key)
 		{
 			if (array_key_exists($key, $payload))
 			{
@@ -548,7 +574,7 @@ class FoodLibraryService extends BaseService
 
 	private function MapFoodRow($row)
 	{
-		return [
+		$food = [
 			'id' => (int)$row->id,
 			'name' => $row->name,
 			'aliases' => $this->GetFoodAliases((int)$row->id),
@@ -568,11 +594,7 @@ class FoodLibraryService extends BaseService
 					'id' => $row->basis_qu_id === null ? null : (int)$row->basis_qu_id,
 					'name' => $row->basis_unit_name,
 					'name_plural' => $row->basis_unit_name_plural
-				],
-				'calories' => $row->nutrition_calories === null ? null : (float)$row->nutrition_calories,
-				'protein' => $row->nutrition_protein === null ? null : (float)$row->nutrition_protein,
-				'fat' => $row->nutrition_fat === null ? null : (float)$row->nutrition_fat,
-				'carbohydrates' => $row->nutrition_carbohydrates === null ? null : (float)$row->nutrition_carbohydrates
+				]
 			],
 			'source' => [
 				'provider' => $row->provider,
@@ -581,6 +603,14 @@ class FoodLibraryService extends BaseService
 				'source_payload' => $this->DecodeSourcePayload($row->source_payload)
 			]
 		];
+
+		foreach ($this->NutrientKeys() as $key)
+		{
+			$property = 'nutrition_' . $key;
+			$food['nutrition'][$key] = $row->{$property} === null ? null : (float)$row->{$property};
+		}
+
+		return $food;
 	}
 
 	private function GetProductUnitConversions($productId)
@@ -659,5 +689,28 @@ class FoodLibraryService extends BaseService
 
 		$decoded = json_decode($sourcePayload, true);
 		return json_last_error() === JSON_ERROR_NONE ? $decoded : $sourcePayload;
+	}
+
+	private function NutrientKeys()
+	{
+		return [
+			'calories',
+			'protein',
+			'carbs',
+			'fat',
+			'saturated_fat',
+			'polyunsaturated_fat',
+			'monounsaturated_fat',
+			'trans_fat',
+			'cholesterol',
+			'sodium',
+			'potassium',
+			'dietary_fiber',
+			'sugars',
+			'vitamin_a',
+			'vitamin_c',
+			'calcium',
+			'iron'
+		];
 	}
 }

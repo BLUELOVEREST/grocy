@@ -68,7 +68,20 @@ class BooheeFoodSearchService extends BaseService
 			'calories' => $food['nutrition']['calories'],
 			'protein' => $food['nutrition']['protein'],
 			'fat' => $food['nutrition']['fat'],
-			'carbohydrates' => $food['nutrition']['carbohydrates'],
+			'carbs' => $food['nutrition']['carbs'],
+			'saturated_fat' => $food['nutrition']['saturated_fat'],
+			'polyunsaturated_fat' => $food['nutrition']['polyunsaturated_fat'],
+			'monounsaturated_fat' => $food['nutrition']['monounsaturated_fat'],
+			'trans_fat' => $food['nutrition']['trans_fat'],
+			'cholesterol' => $food['nutrition']['cholesterol'],
+			'sodium' => $food['nutrition']['sodium'],
+			'potassium' => $food['nutrition']['potassium'],
+			'dietary_fiber' => $food['nutrition']['dietary_fiber'],
+			'sugars' => $food['nutrition']['sugars'],
+			'vitamin_a' => $food['nutrition']['vitamin_a'],
+			'vitamin_c' => $food['nutrition']['vitamin_c'],
+			'calcium' => $food['nutrition']['calcium'],
+			'iron' => $food['nutrition']['iron'],
 			'aliases' => [],
 			'category' => 'boohee',
 			'source_payload' => $rawFood
@@ -132,9 +145,9 @@ class BooheeFoodSearchService extends BaseService
 		$calories = self::FirstNumericValue($raw, ['calories', 'calory', 'energy']);
 		$protein = self::FirstNumericValue($raw, ['protein']);
 		$fat = self::FirstNumericValue($raw, ['fat']);
-		$carbohydrates = self::FirstNumericValue($raw, ['carbohydrate', 'carbs']);
+		$carbs = self::FirstNumericValue($raw, ['carbohydrate', 'carbs']);
 
-		if ($name === null || $externalId === null || $calories === null || $protein === null || $fat === null || $carbohydrates === null)
+		if ($name === null || $externalId === null || $calories === null || $protein === null || $fat === null || $carbs === null)
 		{
 			return null;
 		}
@@ -159,7 +172,20 @@ class BooheeFoodSearchService extends BaseService
 				'calories' => $calories,
 				'protein' => $protein,
 				'fat' => $fat,
-				'carbohydrates' => $carbohydrates
+				'carbs' => $carbs,
+				'saturated_fat' => self::FirstNumericValue($raw, ['saturated_fat', 'saturatedFat']),
+				'polyunsaturated_fat' => self::FirstNumericValue($raw, ['polyunsaturated_fat', 'polyunsaturatedFat']),
+				'monounsaturated_fat' => self::FirstNumericValue($raw, ['monounsaturated_fat', 'monounsaturatedFat']),
+				'trans_fat' => self::FirstNumericValue($raw, ['trans_fat', 'transFat']),
+				'cholesterol' => self::FirstNumericValue($raw, ['cholesterol']),
+				'sodium' => self::FirstNumericValue($raw, ['sodium']),
+				'potassium' => self::FirstNumericValue($raw, ['potassium']),
+				'dietary_fiber' => self::FirstNumericValue($raw, ['dietary_fiber', 'dietaryFiber', 'fiber']),
+				'sugars' => self::FirstNumericValue($raw, ['sugars', 'sugar']),
+				'vitamin_a' => self::FirstNumericValue($raw, ['vitamin_a', 'vitaminA']),
+				'vitamin_c' => self::FirstNumericValue($raw, ['vitamin_c', 'vitaminC']),
+				'calcium' => self::FirstNumericValue($raw, ['calcium']),
+				'iron' => self::FirstNumericValue($raw, ['iron'])
 			],
 			'source' => [
 				'type' => 'external',

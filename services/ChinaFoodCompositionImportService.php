@@ -61,7 +61,7 @@ class ChinaFoodCompositionImportService extends BaseService
 					'calories' => $this->NullableNumber($item, 'energyKCal', $file, $rowIndex),
 					'protein' => $this->NullableNumber($item, 'protein', $file, $rowIndex),
 					'fat' => $this->NullableNumber($item, 'fat', $file, $rowIndex),
-					'carbohydrates' => $this->NullableNumber($item, 'CHO', $file, $rowIndex),
+					'carbs' => $this->NullableNumber($item, 'CHO', $file, $rowIndex),
 					'source_payload' => $item
 				]);
 				$imported++;

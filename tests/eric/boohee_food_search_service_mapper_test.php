@@ -15,6 +15,8 @@ $raw = [
 	'protein' => '24.6',
 	'fat' => '3.1',
 	'carbohydrate' => '0',
+	'saturated_fat' => '0.9',
+	'fiber' => '0.5',
 ];
 
 $candidate = BooheeFoodSearchService::MapRawFoodForTest($raw);
@@ -29,7 +31,11 @@ check($candidate['nutrition']['basis_unit']['name'] === 'g', 'basis unit should 
 check($candidate['nutrition']['calories'] === 133.0, 'calories should map from calory');
 check($candidate['nutrition']['protein'] === 24.6, 'protein should map');
 check($candidate['nutrition']['fat'] === 3.1, 'fat should map');
-check($candidate['nutrition']['carbohydrates'] === 0.0, 'carbohydrates should map from carbohydrate');
+check($candidate['nutrition']['carbs'] === 0.0, 'carbs should map from carbohydrate');
+check($candidate['nutrition']['saturated_fat'] === 0.9, 'saturated fat should map');
+check($candidate['nutrition']['dietary_fiber'] === 0.5, 'dietary fiber should map from fiber');
+check(array_key_exists('potassium', $candidate['nutrition']), 'expanded optional nutrients should be present');
+check($candidate['nutrition']['potassium'] === null, 'missing optional nutrients should be null');
 
 $alternate = BooheeFoodSearchService::MapRawFoodForTest([
 	'food_name' => '燕麦',
@@ -43,7 +49,7 @@ $alternate = BooheeFoodSearchService::MapRawFoodForTest([
 check($alternate['name'] === '燕麦', 'name should map from food_name');
 check($alternate['source']['external_id'] === 'boohee-oats', 'external id should map from uuid');
 check($alternate['nutrition']['calories'] === 367.0, 'calories should map from energy');
-check($alternate['nutrition']['carbohydrates'] === 61.6, 'carbohydrates should map from carbs');
+check($alternate['nutrition']['carbs'] === 61.6, 'carbs should map from carbs');
 
 $titleAndId = BooheeFoodSearchService::MapRawFoodForTest([
 	'title' => '酸奶',
@@ -70,11 +76,11 @@ $detailShape = BooheeFoodSearchService::MapRawFoodForTest([
 check($detailShape['nutrition']['calories'] === 109.0, 'detail calories.value should map');
 check($detailShape['nutrition']['protein'] === 11.42, 'detail protein.value should map');
 check($detailShape['nutrition']['fat'] === 5.24, 'detail fat.value should map');
-check($detailShape['nutrition']['carbohydrates'] === 4.66, 'detail carbohydrate.value should map');
+check($detailShape['nutrition']['carbs'] === 4.66, 'detail carbohydrate.value should map');
 
 $missingCarbs = $raw;
 unset($missingCarbs['carbohydrate']);
-check(BooheeFoodSearchService::MapRawFoodForTest($missingCarbs) === null, 'missing required carbohydrates should return null');
+check(BooheeFoodSearchService::MapRawFoodForTest($missingCarbs) === null, 'missing required carbs should return null');
 
 $searchResult = BooheeFoodSearchService::MapSearchResponseForTest([
 	'data' => [

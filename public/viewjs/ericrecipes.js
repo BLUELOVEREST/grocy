@@ -1,5 +1,6 @@
 ﻿var recipesTables = $('#recipes-table').DataTable({
 	'order': [[1, 'asc']],
+	'stateSave': false,
 	'columnDefs': [
 		{ 'orderable': false, 'targets': 0 },
 		{ 'searchable': false, "targets": 0 },
@@ -156,7 +157,7 @@ $(".recipe-delete").on('click', function(e)
 				Grocy.Api.Delete('objects/recipes/' + objectId, {},
 					function(result)
 					{
-						window.location.href = U('/recipes');
+						window.location.href = U('/eric-recipes');
 					},
 					function(xhr)
 					{
@@ -177,7 +178,7 @@ $(".recipe-copy").on('click', function(e)
 	Grocy.Api.Post("recipes/" + objectId.toString() + "/copy", {},
 		function(result)
 		{
-			window.location.href = U('/recipes?recipe=' + result.created_object_id.toString());
+			window.location.href = U('/eric-recipes?recipe=' + result.created_object_id.toString());
 		},
 		function(xhr)
 		{
@@ -296,7 +297,7 @@ recipesTables.on('select', function(e, dt, type, indexes)
 			$("body").addClass("fullscreen-card");
 
 			bootbox.dialog({
-				message: '<iframe class="embed-responsive" src="' + U("/recipes?embedded&recipe=") + selectedRecipeId + '#fullscreen"></iframe>',
+				message: '<iframe class="embed-responsive" src="' + U("/eric-recipes?embedded&recipe=") + selectedRecipeId + '#fullscreen"></iframe>',
 				size: 'extra-large',
 				backdrop: true,
 				closeButton: false,
@@ -323,14 +324,14 @@ $(".recipe-gallery-item").on("click", function(e)
 
 	if (BoolVal(Grocy.UserSettings.recipes_show_list_side_by_side))
 	{
-		window.location.href = U('/recipes?tab=gallery&recipe=' + selectedRecipeId);
+		window.location.href = U('/eric-recipes?tab=gallery&recipe=' + selectedRecipeId);
 	}
 	else
 	{
 		$("body").addClass("fullscreen-card");
 
 		bootbox.dialog({
-			message: '<iframe class="embed-responsive" src="' + U("/recipes?embedded&recipe=") + selectedRecipeId + '#fullscreen"></iframe>',
+			message: '<iframe class="embed-responsive" src="' + U("/eric-recipes?embedded&recipe=") + selectedRecipeId + '#fullscreen"></iframe>',
 			size: 'extra-large',
 			backdrop: true,
 			closeButton: false,

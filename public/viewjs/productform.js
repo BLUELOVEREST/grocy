@@ -135,9 +135,38 @@ function collectFoodNutritionPayload()
 	return payload;
 }
 
+function parseFoodAliases(value)
+{
+	return (value || "").split(/[\r\n,]+/).map(function(alias)
+	{
+		return alias.trim();
+	}).filter(function(alias, index, aliases)
+	{
+		return alias !== "" && aliases.indexOf(alias) === index;
+	});
+}
+
+function collectFoodAliasesPayload()
+{
+	return {
+		aliases: parseFoodAliases($('#food_aliases').val())
+	};
+}
+
 function saveFoodNutrition(productId, success, error)
 {
 	Grocy.Api.Put('food-nutrition/' + productId, collectFoodNutritionPayload(), success, error);
+}
+
+function saveFoodAliases(productId, success, error)
+{
+	if (!$('#is_food').prop('checked'))
+	{
+		success();
+		return;
+	}
+
+	Grocy.Api.Put('eric/foods/' + productId + '/aliases', collectFoodAliasesPayload(), success, error);
 }
 
 function saveProductPicture(result, location, jsonData)
@@ -147,30 +176,37 @@ function saveProductPicture(result, location, jsonData)
 
 	saveFoodNutrition(productId, function()
 	{
-		saveProductPropertyMetadata(productId, jsonData, function()
+		saveFoodAliases(productId, function()
 		{
-			Grocy.Components.UserfieldsForm.Save(() =>
+			saveProductPropertyMetadata(productId, jsonData, function()
 			{
-				if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
+				Grocy.Components.UserfieldsForm.Save(() =>
 				{
-					Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
-						() => redirectAfterProductSave(productId, location),
-						(xhr) =>
-						{
-							Grocy.FrontendHelpers.EndUiBusy("product-form");
-							Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
-						}
-					);
-				}
-				else
-				{
-					redirectAfterProductSave(productId, location);
-				}
+					if (jsonData.hasOwnProperty("picture_file_name") && !Grocy.DeleteProductPictureOnSave)
+					{
+						Grocy.Api.UploadFile($("#product-picture")[0].files[0], 'productpictures', jsonData.picture_file_name,
+							() => redirectAfterProductSave(productId, location),
+							(xhr) =>
+							{
+								Grocy.FrontendHelpers.EndUiBusy("product-form");
+								Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
+							}
+						);
+					}
+					else
+					{
+						redirectAfterProductSave(productId, location);
+					}
+				});
+			}, function(xhr)
+			{
+				Grocy.FrontendHelpers.EndUiBusy("product-form");
+				Grocy.FrontendHelpers.ShowGenericError('Error while saving product properties', xhr.response);
 			});
 		}, function(xhr)
 		{
 			Grocy.FrontendHelpers.EndUiBusy("product-form");
-			Grocy.FrontendHelpers.ShowGenericError('Error while saving product properties', xhr.response);
+			Grocy.FrontendHelpers.ShowGenericError('Error while saving food aliases', xhr.response);
 		});
 	}, function(xhr)
 	{
@@ -261,6 +297,17 @@ function loadFoodNutrition(productId, fallbackProduct)
 		Grocy.FrontendHelpers.ShowGenericError('Error while loading food nutrition; saving is disabled to prevent overwriting existing nutrition data', xhr.response);
 		console.error(xhr);
 		refreshFoodNutritionSaveState();
+	});
+}
+
+function loadFoodAliases(productId)
+{
+	Grocy.Api.Get('eric/foods/' + productId + '/aliases', function(result)
+	{
+		$('#food_aliases').val(Array.isArray(result.aliases) ? result.aliases.join("\n") : "");
+	}, function(xhr)
+	{
+		console.error(xhr);
 	});
 }
 
@@ -418,6 +465,7 @@ refreshFoodNutritionSaveState();
 if (Grocy.EditMode === 'edit')
 {
 	loadFoodNutrition(Grocy.EditObjectId, Grocy.ProductFoodNutritionFallback);
+	loadFoodAliases(Grocy.EditObjectId);
 }
 else
 {
@@ -887,6 +935,7 @@ if (Grocy.EditMode == "create" && GetUriParam("copy-of") != undefined)
 			if (BoolVal(sourceProduct.is_food))
 			{
 				$("#is_food").prop("checked", true);
+				loadFoodAliases(GetUriParam("copy-of"));
 			}
 			loadFoodNutrition(GetUriParam("copy-of"), {
 				is_food: sourceProduct.is_food,

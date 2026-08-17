@@ -62,8 +62,15 @@ $("#status-filter").on("change", function ()
 		value = "";
 	}
 
-	// Transfer CSS classes of selected element to dropdown element (for background)
-	$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	if ($(this).closest(".eric-shopping-filter-panel").length)
+	{
+		$(this).attr("class", "custom-control custom-select");
+	}
+	else
+	{
+		// Transfer CSS classes of selected element to dropdown element (for background)
+		$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	}
 
 	shoppingListTable.column(shoppingListTable.colReorder.transpose(4)).search(value).draw();
 });
@@ -71,7 +78,7 @@ $("#status-filter").on("change", function ()
 $("#selected-shopping-list").on("change", function ()
 {
 	var value = $(this).val();
-	window.location.href = U('/shoppinglist?list=' + value);
+	window.location.href = U('/eric-shoppinglist?list=' + value);
 });
 
 $(".status-filter-message").on("click", function ()
@@ -106,7 +113,7 @@ $("#delete-selected-shopping-list").on("click", function ()
 				Grocy.Api.Delete('objects/shopping_lists/' + objectId, {},
 					function (result)
 					{
-						window.location.href = U('/shoppinglist');
+						window.location.href = U('/eric-shoppinglist');
 					},
 					function (xhr)
 					{
@@ -168,7 +175,7 @@ $(document).on('click', '#add-products-below-min-stock-amount', function (e)
 	Grocy.Api.Post('stock/shoppinglist/add-missing-products', { "list_id": $("#selected-shopping-list").val() },
 		function (result)
 		{
-			window.location.href = U('/shoppinglist?list=' + $("#selected-shopping-list").val());
+			window.location.href = U('/eric-shoppinglist?list=' + $("#selected-shopping-list").val());
 		},
 		function (xhr)
 		{
@@ -185,7 +192,7 @@ $(document).on('click', '#add-overdue-expired-products', function (e)
 			Grocy.Api.Post('stock/shoppinglist/add-expired-products', { "list_id": $("#selected-shopping-list").val() },
 				function (result)
 				{
-					window.location.href = U('/shoppinglist?list=' + $("#selected-shopping-list").val());
+					window.location.href = U('/eric-shoppinglist?list=' + $("#selected-shopping-list").val());
 				},
 				function (xhr)
 				{
@@ -629,7 +636,7 @@ $(window).on("message", function (e)
 
 	if (data.Message === "ShoppingListChanged")
 	{
-		window.location.href = U('/shoppinglist?list=' + data.Payload);
+		window.location.href = U('/eric-shoppinglist?list=' + data.Payload);
 	}
 });
 

@@ -141,6 +141,16 @@ class StockController extends BaseController
 
 	public function Overview(Request $request, Response $response, array $args)
 	{
+		return $this->OverviewPage($response, 'stockoverview');
+	}
+
+	public function EricOverview(Request $request, Response $response, array $args)
+	{
+		return $this->OverviewPage($response, 'ericstockoverview');
+	}
+
+	private function OverviewPage(Response $response, string $viewName)
+	{
 		$usersService = UsersService::GetInstance();
 		$userSettings = $usersService->GetUserSettings(GROCY_USER_ID);
 		$nextXDays = $userSettings['stock_due_soon_days'];
@@ -151,7 +161,7 @@ class StockController extends BaseController
 			$where = '1=1';
 		}
 
-		return $this->RenderPage($response, 'stockoverview', [
+		return $this->RenderPage($response, $viewName, [
 			'currentStock' => $this->DB->uihelper_stock_current_overview()->where($where),
 			'locations' => $this->DB->locations()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 			'currentStockLocations' => StockService::GetInstance()->GetCurrentStockLocations(),
@@ -420,13 +430,23 @@ class StockController extends BaseController
 
 	public function ShoppingList(Request $request, Response $response, array $args)
 	{
+		return $this->ShoppingListPage($request, $response, 'shoppinglist', '/shoppinglist');
+	}
+
+	public function EricShoppingList(Request $request, Response $response, array $args)
+	{
+		return $this->ShoppingListPage($request, $response, 'ericshoppinglist', '/eric-shoppinglist');
+	}
+
+	private function ShoppingListPage(Request $request, Response $response, string $viewName, string $basePath)
+	{
 		$listId = $request->getQueryParams()['list'] ?? null;
 		$shoppingLists = $this->DB->shopping_lists_view()->orderBy('name', 'COLLATE NOCASE');
 		if ($listId === null || filter_var($listId, FILTER_VALIDATE_INT) === false || $this->DB->shopping_lists($listId) === null)
 		{
 			if ($listId === null && $shoppingLists->count() === 1)
 			{
-				return $response->withRedirect($this->AppContainer->get('UrlManager')->ConstructUrl('/shoppinglist?list=' . $shoppingLists->fetch()->id));
+				return $response->withRedirect($this->AppContainer->get('UrlManager')->ConstructUrl($basePath . '?list=' . $shoppingLists->fetch()->id));
 			}
 
 			return $this->RenderPage($response, 'shoppinglists', [
@@ -440,7 +460,7 @@ class StockController extends BaseController
 			$listItems = $this->DB->uihelper_shopping_list()->where('shopping_list_id = :1', $listId)->orderBy('product_name', 'COLLATE NOCASE');
 		}
 
-		return $this->RenderPage($response, 'shoppinglist', [
+		return $this->RenderPage($response, $viewName, [
 			'listItems' => $listItems,
 			'products' => $this->DB->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 			'quantityunits' => $this->DB->quantity_units()->orderBy('name', 'COLLATE NOCASE'),

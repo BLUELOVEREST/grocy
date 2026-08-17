@@ -83,6 +83,16 @@ class RecipesController extends BaseController
 
 	public function Overview(Request $request, Response $response, array $args)
 	{
+		return $this->OverviewPage($request, $response, 'recipes');
+	}
+
+	public function EricOverview(Request $request, Response $response, array $args)
+	{
+		return $this->OverviewPage($request, $response, 'ericrecipes');
+	}
+
+	private function OverviewPage(Request $request, Response $response, string $viewName)
+	{
 		$recipes = $this->DB->recipes()->where('type', RecipesService::RECIPE_TYPE_NORMAL)->orderBy('name', 'COLLATE NOCASE');
 		$recipesResolved = RecipesService::GetInstance()->GetRecipesResolved('recipe_id > 0');
 
@@ -156,7 +166,7 @@ class RecipesController extends BaseController
 			$viewData['allRecipePositions'] = $allRecipePositions;
 		}
 
-		return $this->RenderPage($response, 'recipes', $viewData);
+		return $this->RenderPage($response, $viewName, $viewData);
 	}
 
 	public function RecipeEditForm(Request $request, Response $response, array $args)

@@ -590,12 +590,12 @@
 				<span>Dashboard</span>
 			</a>
 			<a class="eric-dashboard-nav-link"
-				href="{{ $U('/stockoverview') }}">
+				href="{{ $U('/eric-stockoverview') }}">
 				<i class="fa-solid fa-fw fa-box"></i>
 				<span>Stock</span>
 			</a>
 			<a class="eric-dashboard-nav-link"
-				href="{{ $U('/shoppinglist') }}">
+				href="{{ $U('/eric-shoppinglist') }}">
 				<i class="fa-solid fa-fw fa-shopping-cart"></i>
 				<span>Shopping List</span>
 			</a>
@@ -605,7 +605,7 @@
 				<span>Food Library</span>
 			</a>
 			<a class="eric-dashboard-nav-link"
-				href="{{ $U('/recipes') }}">
+				href="{{ $U('/eric-recipes') }}">
 				<i class="fa-solid fa-fw fa-pizza-slice"></i>
 				<span>Recipes</span>
 			</a>
@@ -731,7 +731,7 @@
 				<a class="eric-btn show-as-dialog-link"
 					href="{{ $U('/shoppinglistitem/new?embedded&list=' . $selectedShoppingList->id) }}">添加购物项</a>
 				<a class="eric-btn eric-btn-primary"
-					href="{{ $U('/shoppinglist?list=' . $selectedShoppingList->id) }}">打开购物清单</a>
+					href="{{ $U('/eric-shoppinglist?list=' . $selectedShoppingList->id) }}">打开购物清单</a>
 				@endif
 			</div>
 		</section>
@@ -749,7 +749,7 @@
 							style="background: var(--eric-amber);"></span>临期</h3>
 					@forelse(array_slice($dueProducts, 0, 4) as $dueProduct)
 					<a class="eric-alert-row"
-						href="{{ $U('/stockoverview') }}">
+						href="{{ $U('/eric-stockoverview') }}">
 						<div class="eric-alert-main">
 							<p class="eric-alert-title">{{ $dueProduct->product_name }}</p>
 							<p class="eric-alert-meta">{{ $dueProduct->best_before_date }}</p>
@@ -766,7 +766,7 @@
 							style="background: var(--eric-danger);"></span>已过期</h3>
 					@forelse(array_slice($expiredProducts, 0, 3) as $expiredProduct)
 					<a class="eric-alert-row"
-						href="{{ $U('/stockoverview') }}">
+						href="{{ $U('/eric-stockoverview') }}">
 						<div class="eric-alert-main">
 							<p class="eric-alert-title">{{ $expiredProduct->product_name }}</p>
 							<p class="eric-alert-meta">{{ $expiredProduct->best_before_date }}</p>
@@ -783,7 +783,7 @@
 							style="background: var(--eric-primary);"></span>低库存</h3>
 					@forelse(array_slice($missingProducts, 0, 4) as $missingProduct)
 					<a class="eric-alert-row"
-						href="{{ $U('/stockoverview') }}">
+						href="{{ $U('/eric-stockoverview') }}">
 						<div class="eric-alert-main">
 							<p class="eric-alert-title">{{ $missingProduct->name ?? $missingProduct->product->name ?? $__t('Product') }}</p>
 							<p class="eric-alert-meta">
@@ -799,7 +799,7 @@
 			</div>
 			<div class="eric-panel-footer">
 				<a class="eric-btn eric-btn-primary"
-					href="{{ $U('/stockoverview') }}">查看库存</a>
+					href="{{ $U('/eric-stockoverview') }}">查看库存</a>
 			</div>
 		</section>
 	</div>
@@ -836,7 +836,7 @@
 				<a class="eric-chip"
 					href="{{ $U('/products') }}">产品管理</a>
 				<a class="eric-chip"
-					href="{{ $U('/recipes') }}">菜谱</a>
+					href="{{ $U('/eric-recipes') }}">菜谱</a>
 				<a class="eric-chip"
 					href="{{ $U('/purchase') }}">入库</a>
 				<a class="eric-chip"

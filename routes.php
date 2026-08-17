@@ -73,6 +73,7 @@ $app->group('', function (RouteCollectorProxy $group)
 	$group->get('/product/{productId}/grocycode', [StockController::class, 'ProductGrocycodeImage']);
 
 	// Stock handling routes
+	$group->get('/eric-stockoverview', [StockController::class, 'EricOverview']);
 	$group->get('/stockoverview', [StockController::class, 'Overview']);
 	$group->get('/stockentries', [StockController::class, 'Stockentries']);
 	$group->get('/purchase', [StockController::class, 'Purchase']);
@@ -98,6 +99,7 @@ $app->group('', function (RouteCollectorProxy $group)
 	$group->get('/shoppinglocation/{shoppingLocationId}', [StockController::class, 'ShoppingLocationEditForm']);
 
 	// Shopping list routes
+	$group->get('/eric-shoppinglist', [StockController::class, 'EricShoppingList']);
 	$group->get('/shoppinglist', [StockController::class, 'ShoppingList']);
 	$group->get('/shoppinglistitem/{itemId}', [StockController::class, 'ShoppingListItemEditForm']);
 	$group->get('/shoppinglistitem/{itemId}/stock', [StockController::class, 'ShoppingListItemStockForm']);
@@ -105,6 +107,7 @@ $app->group('', function (RouteCollectorProxy $group)
 	$group->get('/shoppinglistsettings', [StockController::class, 'ShoppingListSettings']);
 
 	// Recipe routes
+	$group->get('/eric-recipes', [RecipesController::class, 'EricOverview']);
 	$group->get('/recipes', [RecipesController::class, 'Overview']);
 	$group->get('/recipe/{recipeId}', [RecipesController::class, 'RecipeEditForm']);
 	$group->get('/recipe/{recipeId}/pos/{recipePosId}', [RecipesController::class, 'RecipePosEditForm']);
@@ -210,6 +213,7 @@ $app->group('/api', function (RouteCollectorProxy $group)
 
 	// Eric food library
 	$group->get('/eric/foods/search', [FoodLibraryApiController::class, 'Search']);
+	$group->get('/eric/foods/{productId}/aliases', [FoodLibraryApiController::class, 'GetAliases']);
 	$group->put('/eric/foods/{productId}/aliases', [FoodLibraryApiController::class, 'UpdateAliases']);
 	$group->get('/eric/foods/{productId}', [FoodLibraryApiController::class, 'Get']);
 	$group->post('/eric/foods/import', [FoodLibraryApiController::class, 'Import']);

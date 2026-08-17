@@ -58,6 +58,16 @@ class FoodLibraryApiController extends BaseApiController
 		}
 	}
 
+	public function GetAliases(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_RECIPES);
+
+		return $this->ApiResponse($response, [
+			'product_id' => (int)$args['productId'],
+			'aliases' => FoodLibraryService::GetInstance()->GetFoodAliases($args['productId'])
+		]);
+	}
+
 	public function Import(Request $request, Response $response, array $args)
 	{
 		User::CheckPermission($request, User::PERMISSION_RECIPES);

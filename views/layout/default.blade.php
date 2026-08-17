@@ -160,17 +160,6 @@
 			class="collapse navbar-collapse">
 			<ul class="navbar-nav navbar-sidenav">
 
-				<li class="nav-item nav-item-sidebar @if($viewName == 'ericdashboard') active-page @endif"
-					data-toggle="tooltip"
-					data-placement="right"
-					title="Eric Dashboard">
-					<a class="nav-link discrete-link"
-						href="{{ $U('/eric-dashboard') }}">
-						<i class="fa-solid fa-fw fa-gauge-high"></i>
-						<span class="nav-link-text">Eric Dashboard</span>
-					</a>
-				</li>
-
 				@if(GROCY_FEATURE_FLAG_STOCK)
 				<li class="nav-item nav-item-sidebar @if($viewName == 'stockoverview') active-page @endif"
 					data-toggle="tooltip"

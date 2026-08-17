@@ -822,6 +822,16 @@
 
 			<div id="product-nutrition-fields">
 				<h4>{{ $__t('Food nutrition') }}</h4>
+
+				<div class="form-group">
+					<label for="food_aliases">{{ $__t('Aliases') }}</label>
+					<textarea class="form-control food-nutrition-input"
+						id="food_aliases"
+						rows="3"
+						placeholder="{{ $__t('One alias per line, or separated by commas') }}"></textarea>
+					<small class="form-text text-muted">{{ $__t('Aliases are used by the food library search, for example 西红柿 / 番茄.') }}</small>
+				</div>
+
 				<p class="text-muted small">
 					{{ $__t('Nutrition basis') }}:
 					<span id="nutrition-basis-description"></span>

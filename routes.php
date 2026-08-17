@@ -111,6 +111,7 @@ $app->group('', function (RouteCollectorProxy $group)
 	$group->get('/recipes', [RecipesController::class, 'Overview']);
 	$group->get('/recipe/{recipeId}', [RecipesController::class, 'RecipeEditForm']);
 	$group->get('/recipe/{recipeId}/pos/{recipePosId}', [RecipesController::class, 'RecipePosEditForm']);
+	$group->get('/eric-foodlibrary', [RecipesController::class, 'EricFoodLibrary']);
 	$group->get('/foodlibrary', [RecipesController::class, 'FoodLibrary']);
 	$group->get('/recipessettings', [RecipesController::class, 'RecipesSettings']);
 	$group->get('/recipe/{recipeId}/grocycode', [RecipesController::class, 'RecipeGrocycodeImage']);

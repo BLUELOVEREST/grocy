@@ -535,7 +535,7 @@
 				<span>Shopping List</span>
 			</a>
 			<a class="eric-recipes-nav-link"
-				href="{{ $U('/foodlibrary') }}">
+				href="{{ $U('/eric-foodlibrary') }}">
 				<i class="fa-solid fa-fw fa-bowl-food"></i>
 				<span>Food Library</span>
 			</a>

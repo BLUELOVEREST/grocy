@@ -221,6 +221,13 @@ class RecipesController extends BaseController
 		return $this->RenderPage($response, 'foodlibrary');
 	}
 
+	public function EricFoodLibrary(Request $request, Response $response, array $args)
+	{
+		User::CheckPermission($request, User::PERMISSION_RECIPES);
+
+		return $this->RenderPage($response, 'ericfoodlibrary');
+	}
+
 	public function RecipesSettings(Request $request, Response $response, array $args)
 	{
 		return $this->RenderPage($response, 'recipessettings');

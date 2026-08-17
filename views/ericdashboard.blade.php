@@ -600,7 +600,7 @@
 				<span>Shopping List</span>
 			</a>
 			<a class="eric-dashboard-nav-link"
-				href="{{ $U('/foodlibrary') }}">
+				href="{{ $U('/eric-foodlibrary') }}">
 				<i class="fa-solid fa-fw fa-bowl-food"></i>
 				<span>Food Library</span>
 			</a>
@@ -832,7 +832,7 @@
 			<h3 class="eric-label">常用入口</h3>
 			<div class="eric-chip-list">
 				<a class="eric-chip"
-					href="{{ $U('/foodlibrary') }}">食品库</a>
+					href="{{ $U('/eric-foodlibrary') }}">食品库</a>
 				<a class="eric-chip"
 					href="{{ $U('/products') }}">产品管理</a>
 				<a class="eric-chip"

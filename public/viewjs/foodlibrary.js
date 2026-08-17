@@ -260,6 +260,7 @@ var foodLibraryTable = $("#food-library-table").DataTable({
 	"serverSide": true,
 	"paging": true,
 	"searching": false,
+	"stateSave": false,
 	"pageLength": 20,
 	"order": [[0, "asc"]],
 	"ajax": function(data, callback)

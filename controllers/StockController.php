@@ -424,6 +424,11 @@ class StockController extends BaseController
 		$shoppingLists = $this->DB->shopping_lists_view()->orderBy('name', 'COLLATE NOCASE');
 		if ($listId === null || filter_var($listId, FILTER_VALIDATE_INT) === false || $this->DB->shopping_lists($listId) === null)
 		{
+			if ($listId === null && $shoppingLists->count() === 1)
+			{
+				return $response->withRedirect($this->AppContainer->get('UrlManager')->ConstructUrl('/shoppinglist?list=' . $shoppingLists->fetch()->id));
+			}
+
 			return $this->RenderPage($response, 'shoppinglists', [
 				'shoppingLists' => $shoppingLists
 			]);

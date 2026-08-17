@@ -1,5 +1,6 @@
 ﻿var recipesTables = $('#recipes-table').DataTable({
 	'order': [[1, 'asc']],
+	'stateSave': false,
 	'columnDefs': [
 		{ 'orderable': false, 'targets': 0 },
 		{ 'searchable': false, "targets": 0 },

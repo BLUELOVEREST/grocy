@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grocy - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "soft-border": "#E5E7EB",
+                        "secondary-fixed": "#dce2f3",
+                        "on-error": "#ffffff",
+                        "panel-white": "#FFFFFF",
+                        "secondary-container": "#dce2f3",
+                        "subtle-fill": "#EEF2F6",
+                        "on-tertiary-fixed-variant": "#00531c",
+                        "secondary-fixed-dim": "#c0c7d6",
+                        "on-primary-fixed-variant": "#00458e",
+                        "outline-variant": "#c1c6d5",
+                        "surface-container-high": "#e6e8eb",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#001b3f",
+                        "tertiary-fixed": "#72fe88",
+                        "surface-tint": "#005cba",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5e6572",
+                        "meal-amber": "#FF9F0A",
+                        "inverse-on-surface": "#eff1f4",
+                        "primary-fixed": "#d7e3ff",
+                        "tertiary-fixed-dim": "#53e16f",
+                        "surface-container-highest": "#e0e3e6",
+                        "on-surface-variant": "#414753",
+                        "surface": "#F5F7FA", 
+                        "primary-fixed-dim": "#abc7ff",
+                        "on-tertiary-fixed": "#002107",
+                        "tertiary-container": "#008733",
+                        "surface-bright": "#f7f9fc",
+                        "secondary": "#6B7280", 
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-fixed": "#151c27",
+                        "surface-variant": "#e0e3e6",
+                        "surface-container": "#eceef1",
+                        "background": "#F5F7FA",
+                        "on-background": "#1D1D1F",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#abc7ff",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-low": "#f2f4f7",
+                        "primary-container": "#1672df",
+                        "on-tertiary-container": "#f7fff2",
+                        "primary": "#005ab6",
+                        "outline": "#727785",
+                        "tertiary": "#006b27",
+                        "on-surface": "#1D1D1F",
+                        "ink-charcoal": "#1D1D1F",
+                        "on-secondary-fixed-variant": "#404754",
+                        "surface-dim": "#d8dadd",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "fresh-green": "#34C759"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "rail-width": "240px",
+                        "margin-desktop": "32px",
+                        "stack-xs": "4px",
+                        "stack-lg": "24px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "tabular-nums": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "tabular-nums": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface h-full flex overflow-hidden text-ink-charcoal font-body-md antialiased">
+<aside class="hidden md:flex flex-col bg-surface-container-low border-r border-soft-border w-rail-width flex-shrink-0 z-40 fixed h-full top-0 left-0">
+<div class="p-stack-md flex items-center gap-stack-sm border-b border-soft-border">
+<span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-headline-md text-headline-md font-semibold text-primary">Grocy</span>
+</div>
+<nav class="flex-1 overflow-y-auto py-stack-md px-stack-sm space-y-stack-sm">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-primary text-on-primary rounded-lg font-body-md transition-all scale-98 shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span>Stock</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+<span>Shopping List</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">restaurant</span>
+<span>Recipes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">cleaning_services</span>
+<span>Chores</span>
+</a>
+</div>
+<div class="pt-4 border-t border-soft-border mt-4">
+<p class="px-3 text-label-caps font-label-caps text-secondary mb-2 uppercase">Quick Actions</p>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>入库 (In)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">do_not_disturb_on</span>
+<span>出库 (Out)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+<span>盘点 (Audit)</span>
+</a>
+</div>
+</div>
+<div class="pt-4 border-t border-soft-border mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-variant hover:text-ink-charcoal rounded-lg font-body-md transition-all mt-1" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span>Help</span>
+</a>
+</div>
+</nav>
+</aside>
+<div class="flex-1 flex flex-col md:ml-[240px] min-w-0">
+<header class="bg-panel-white border-b border-soft-border px-margin-desktop py-4 flex items-center justify-between sticky top-0 z-30">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-ink-charcoal flex items-center gap-2">
+                    Eric Grocy 
+                    <span class="text-body-sm font-body-sm text-secondary font-normal mt-1">Oct 24, 10:42 AM</span>
+</h1>
+<p class="text-body-sm font-body-sm text-secondary mt-1 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-fresh-green inline-block"></span>
+                    本地食品库 208 项 / 薄荷回退已开启 / 同步正常
+                </p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-panel-white border border-soft-border rounded-lg text-ink-charcoal font-body-sm font-medium hover:bg-surface-variant transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span> 入库
+                </button>
+<button class="px-4 py-2 bg-panel-white border border-soft-border rounded-lg text-ink-charcoal font-body-sm font-medium hover:bg-surface-variant transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">remove</span> 出库
+                </button>
+<div class="h-6 w-px bg-soft-border mx-1"></div>
+<button class="px-4 py-2 bg-primary text-panel-white rounded-lg font-body-sm font-medium hover:bg-surface-tint transition-colors shadow-sm">
+                    添加产品
+                </button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-margin-desktop space-y-stack-lg pb-24">
+<section class="bg-panel-white rounded-xl border border-soft-border p-6 shadow-sm">
+<div class="relative max-w-3xl mx-auto">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary text-[24px]">search</span>
+<input class="w-full bg-subtle-fill border-0 rounded-lg pl-12 pr-10 py-4 text-headline-sm font-headline-sm text-ink-charcoal placeholder:text-secondary focus:ring-2 focus:ring-primary focus:bg-panel-white transition-all" placeholder="搜索产品、别名、条码或食品来源" type="text"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary hover:text-ink-charcoal transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="mt-6 max-w-4xl mx-auto">
+<p class="text-label-caps font-label-caps text-secondary mb-3 uppercase tracking-wider">Quick Results</p>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-subtle-fill transition-colors border border-transparent hover:border-soft-border group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-subtle-fill flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">egg</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-ink-charcoal">鸡蛋 (Eggs)</p>
+<p class="text-body-sm font-body-sm text-secondary">3 items left • Fridge</p>
+</div>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm">详情</button>
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm text-fresh-green">+ 入库</button>
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm text-meal-amber">- 出库</button>
+</div>
+</div>
+<div class="h-px w-full bg-soft-border/50"></div>
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-subtle-fill transition-colors border border-transparent hover:border-soft-border group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-subtle-fill flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">set_meal</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-ink-charcoal">鸡胸肉 (Chicken Breast)</p>
+<p class="text-body-sm font-body-sm text-secondary">500g • Freezer</p>
+</div>
+</div>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm">详情</button>
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm text-fresh-green">+ 入库</button>
+<button class="px-3 py-1.5 bg-panel-white border border-soft-border rounded text-body-sm font-medium hover:bg-surface-variant shadow-sm text-meal-amber">- 出库</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg">
+<section class="bg-panel-white rounded-xl border border-soft-border shadow-sm overflow-hidden flex flex-col h-[500px]">
+<div class="p-4 border-b border-soft-border bg-subtle-fill/50 flex justify-between items-center">
+<h2 class="font-headline-sm text-headline-sm text-ink-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
+                            购物清单
+                        </h2>
+<span class="px-2 py-1 bg-surface-container border border-soft-border rounded text-tabular-nums font-tabular-nums text-secondary">8 pending</span>
+</div>
+<div class="p-4 border-b border-soft-border">
+<div class="relative">
+<input class="w-full border border-soft-border rounded-lg pl-3 pr-10 py-2 text-body-md focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm" placeholder="快速添加..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:text-surface-tint">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="divide-y divide-soft-border">
+<li class="flex items-center gap-3 p-4 hover:bg-subtle-fill/50 transition-colors">
+<input class="w-5 h-5 border-soft-border rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="flex-1 font-body-md text-ink-charcoal">蓝莓 (Blueberries)</span>
+<span class="text-tabular-nums font-tabular-nums text-secondary bg-surface rounded px-2 py-1 border border-soft-border">2 boxes</span>
+</li>
+<li class="flex items-center gap-3 p-4 hover:bg-subtle-fill/50 transition-colors">
+<input class="w-5 h-5 border-soft-border rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="flex-1 font-body-md text-ink-charcoal">生菜 (Lettuce)</span>
+<span class="text-tabular-nums font-tabular-nums text-secondary bg-surface rounded px-2 py-1 border border-soft-border">1 head</span>
+</li>
+<li class="flex items-center gap-3 p-4 hover:bg-subtle-fill/50 transition-colors">
+<input class="w-5 h-5 border-soft-border rounded text-primary focus:ring-primary" type="checkbox"/>
+<span class="flex-1 font-body-md text-ink-charcoal">希腊酸奶 (Greek Yogurt)</span>
+<span class="text-tabular-nums font-tabular-nums text-secondary bg-surface rounded px-2 py-1 border border-soft-border">500g</span>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-surface-container-low border-t border-soft-border text-center">
+<button class="text-body-sm font-body-sm text-primary hover:underline">View suggested additions (3)</button>
+</div>
+</section>
+<section class="bg-panel-white rounded-xl border border-soft-border shadow-sm overflow-hidden flex flex-col h-[500px]">
+<div class="p-4 border-b border-soft-border bg-subtle-fill/50 flex justify-between items-center">
+<h2 class="font-headline-sm text-headline-sm text-ink-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-meal-amber text-[20px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+                            库存提醒
+                        </h2>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<div>
+<h3 class="text-label-caps font-label-caps text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-meal-amber"></span> 临期 (Expiring Soon)
+                            </h3>
+<div class="space-y-2">
+<div class="flex justify-between items-center p-3 border border-soft-border rounded-lg bg-surface-bright hover:bg-subtle-fill transition-colors">
+<div class="flex flex-col">
+<span class="font-body-md text-ink-charcoal font-medium">生菜 (Lettuce)</span>
+<span class="text-body-sm font-body-sm text-meal-amber">Expiring tomorrow</span>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded transition-colors"><span class="material-symbols-outlined">restaurant</span></button>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-label-caps font-label-caps text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span> 已过期 (Expired)
+                            </h3>
+<p class="text-body-sm font-body-sm text-secondary italic px-2">No expired items.</p>
+</div>
+<div>
+<h3 class="text-label-caps font-label-caps text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span> 低库存 (Low Stock)
+                            </h3>
+<div class="space-y-2">
+<div class="flex justify-between items-center p-3 border border-soft-border rounded-lg bg-surface-bright hover:bg-subtle-fill transition-colors">
+<div class="flex flex-col">
+<span class="font-body-md text-ink-charcoal font-medium">鸡蛋 (Eggs)</span>
+<span class="text-body-sm font-body-sm text-secondary">3 left (Min: 6)</span>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded transition-colors"><span class="material-symbols-outlined">add_shopping_cart</span></button>
+</div>
+<div class="flex justify-between items-center p-3 border border-soft-border rounded-lg bg-surface-bright hover:bg-subtle-fill transition-colors">
+<div class="flex flex-col">
+<span class="font-body-md text-ink-charcoal font-medium">豆浆 (Soy Milk)</span>
+<span class="text-body-sm font-body-sm text-secondary">900 ml</span>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded transition-colors"><span class="material-symbols-outlined">add_shopping_cart</span></button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<section class="bg-panel-white rounded-xl border border-soft-border p-4 shadow-sm">
+<h3 class="text-label-caps font-label-caps text-secondary uppercase tracking-wider mb-3 border-b border-soft-border pb-2">最近操作 (Recent Activity)</h3>
+<ul class="space-y-2">
+<li class="flex items-start gap-3 text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-fresh-green text-[16px] mt-0.5">add</span>
+<div>
+<p class="text-ink-charcoal">Added <span class="font-medium">蓝莓</span></p>
+<p class="text-secondary text-xs">Today, 09:15 AM</p>
+</div>
+</li>
+<li class="flex items-start gap-3 text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-meal-amber text-[16px] mt-0.5">remove</span>
+<div>
+<p class="text-ink-charcoal">Consumed <span class="font-medium">鸡蛋 (2)</span></p>
+<p class="text-secondary text-xs">Yesterday, 19:30 PM</p>
+</div>
+</li>
+</ul>
+</section>
+<section class="bg-panel-white rounded-xl border border-soft-border p-4 shadow-sm">
+<h3 class="text-label-caps font-label-caps text-secondary uppercase tracking-wider mb-3 border-b border-soft-border pb-2">常用产品 (Frequent Items)</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-subtle-fill border border-soft-border rounded-full text-body-sm font-body-sm text-ink-charcoal hover:bg-surface-variant cursor-pointer transition-colors">Eggs</span>
+<span class="px-3 py-1 bg-subtle-fill border border-soft-border rounded-full text-body-sm font-body-sm text-ink-charcoal hover:bg-surface-variant cursor-pointer transition-colors">Milk</span>
+<span class="px-3 py-1 bg-subtle-fill border border-soft-border rounded-full text-body-sm font-body-sm text-ink-charcoal hover:bg-surface-variant cursor-pointer transition-colors">Chicken Breast</span>
+<span class="px-3 py-1 bg-subtle-fill border border-soft-border rounded-full text-body-sm font-body-sm text-ink-charcoal hover:bg-surface-variant cursor-pointer transition-colors">Rice</span>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

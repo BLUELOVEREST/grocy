@@ -62,8 +62,15 @@ $("#status-filter").on("change", function ()
 		value = "";
 	}
 
-	// Transfer CSS classes of selected element to dropdown element (for background)
-	$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	if ($(this).closest(".eric-shopping-filter-panel").length)
+	{
+		$(this).attr("class", "custom-control custom-select");
+	}
+	else
+	{
+		// Transfer CSS classes of selected element to dropdown element (for background)
+		$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	}
 
 	shoppingListTable.column(shoppingListTable.colReorder.transpose(4)).search(value).draw();
 });

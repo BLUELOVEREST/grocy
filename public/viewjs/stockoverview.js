@@ -13,12 +13,9 @@ var stockOverviewTable = $('#stock-overview-table').DataTable({
 		{ 'visible': false, 'targets': 4 },
 		{ 'visible': false, 'targets': 9 },
 		{ 'visible': false, 'targets': 10 },
-		{ 'visible': false, 'targets': 11 },
-		{ 'visible': false, 'targets': 12 },
 		{ 'visible': false, 'targets': 13 },
 		{ 'visible': false, 'targets': 14 },
 		{ 'visible': false, 'targets': 15 },
-		{ 'visible': false, 'targets': 16 },
 		{ 'visible': false, 'targets': 17 },
 		{ 'visible': false, 'targets': 18 },
 		{ 'visible': false, 'targets': 19 },
@@ -75,8 +72,15 @@ $("#status-filter").on("change", function()
 		value = "";
 	}
 
-	// Transfer CSS classes of selected element to dropdown element (for background)
-	$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	if ($(this).closest(".eric-stock-filter-panel").length)
+	{
+		$(this).attr("class", "custom-control custom-select");
+	}
+	else
+	{
+		// Transfer CSS classes of selected element to dropdown element (for background)
+		$(this).attr("class", $("#" + $(this).attr("id") + " option[value='" + value + "']").attr("class") + " form-control");
+	}
 
 	stockOverviewTable.column(stockOverviewTable.colReorder.transpose(7)).search(value).draw();
 });
@@ -260,10 +264,10 @@ function RefreshStatistics()
 			var expiredProducts = result.expired_products.filter(x => !BoolVal(x.product.hide_on_stock_overview));
 			var missingProducts = result.missing_products.filter(x => !BoolVal(x.product.hide_on_stock_overview));
 
-			$("#info-duesoon-products").html('<span class="d-block d-md-none">' + dueProducts.length + ' <i class="fa-solid fa-clock"></i></span><span class="d-none d-md-block">' + __n(dueProducts.length, '%s product is due', '%s products are due') + ' ' + __n(nextXDays, 'within the next day', 'within the next %s days') + '</span>');
-			$("#info-overdue-products").html('<span class="d-block d-md-none">' + overdueProducts.length + ' <i class="fa-solid fa-times-circle"></i></span><span class="d-none d-md-block">' + __n(overdueProducts.length, '%s product is overdue', '%s products are overdue') + '</span>');
-			$("#info-expired-products").html('<span class="d-block d-md-none">' + expiredProducts.length + ' <i class="fa-solid fa-times-circle"></i></span><span class="d-none d-md-block">' + __n(expiredProducts.length, '%s product is expired', '%s products are expired') + '</span>');
-			$("#info-missing-products").html('<span class="d-block d-md-none">' + missingProducts.length + ' <i class="fa-solid fa-exclamation-circle"></i></span><span class="d-none d-md-block">' + __n(missingProducts.length, '%s product is below defined min. stock amount', '%s products are below defined min. stock amount') + '</span>');
+			SetStockStatusMessage("#info-duesoon-products", dueProducts.length, __n(nextXDays, 'within the next day', 'within the next %s days'), '<span class="d-block d-md-none">' + dueProducts.length + ' <i class="fa-solid fa-clock"></i></span><span class="d-none d-md-block">' + __n(dueProducts.length, '%s product is due', '%s products are due') + ' ' + __n(nextXDays, 'within the next day', 'within the next %s days') + '</span>');
+			SetStockStatusMessage("#info-overdue-products", overdueProducts.length, __n(overdueProducts.length, '%s product is overdue', '%s products are overdue'), '<span class="d-block d-md-none">' + overdueProducts.length + ' <i class="fa-solid fa-times-circle"></i></span><span class="d-none d-md-block">' + __n(overdueProducts.length, '%s product is overdue', '%s products are overdue') + '</span>');
+			SetStockStatusMessage("#info-expired-products", expiredProducts.length, __n(expiredProducts.length, '%s product is expired', '%s products are expired'), '<span class="d-block d-md-none">' + expiredProducts.length + ' <i class="fa-solid fa-times-circle"></i></span><span class="d-none d-md-block">' + __n(expiredProducts.length, '%s product is expired', '%s products are expired') + '</span>');
+			SetStockStatusMessage("#info-missing-products", missingProducts.length, __n(missingProducts.length, '%s product is below defined min. stock amount', '%s products are below defined min. stock amount'), '<span class="d-block d-md-none">' + missingProducts.length + ' <i class="fa-solid fa-exclamation-circle"></i></span><span class="d-none d-md-block">' + __n(missingProducts.length, '%s product is below defined min. stock amount', '%s products are below defined min. stock amount') + '</span>');
 		},
 		function(xhr)
 		{
@@ -272,6 +276,20 @@ function RefreshStatistics()
 	);
 }
 RefreshStatistics();
+
+function SetStockStatusMessage(selector, count, note, fallbackHtml)
+{
+	var element = $(selector);
+	if (element.hasClass("eric-stock-status-card"))
+	{
+		element.find("strong").text(count);
+		element.find(".eric-stock-status-note").text(note);
+	}
+	else
+	{
+		element.html(fallbackHtml);
+	}
+}
 
 function RefreshProductRow(productId)
 {

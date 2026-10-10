@@ -1,4 +1,4 @@
-FROM node:22-alpine AS frontend-deps
+FROM node:24-alpine AS frontend-deps
 WORKDIR /app
 RUN apk add --no-cache git ca-certificates
 COPY package.json yarn.lock .yarnrc ./
@@ -17,7 +17,7 @@ RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoload
 	--ignore-platform-req=ext-intl
 
 FROM php:8.5-apache-bookworm AS runtime
-ARG ERIC_GROCY_VERSION=4.7.1-eric.17
+ARG ERIC_GROCY_VERSION=4.7.1-eric.18
 ARG GROCY_BASE_VERSION=4.7.1
 LABEL org.opencontainers.image.title="Eric Grocy"
 LABEL org.opencontainers.image.description="Personal Grocy build with Eric shopping list customizations"

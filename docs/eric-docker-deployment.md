@@ -13,14 +13,14 @@ v<grocy-version>-eric.<revision>
 Current version:
 
 ```text
-v4.7.1-eric.17
+v4.7.1-eric.18
 ```
 
 When upstream Grocy is updated to a new version, reset or continue the Eric revision intentionally, for example:
 
 ```text
-v4.7.1-eric.17
 v4.7.1-eric.18
+v4.7.1-eric.19
 ```
 
 `version.json` keeps the upstream Grocy version. `eric-version.json` records the custom build version.
@@ -57,15 +57,15 @@ The default registry and image repository are configured in the workflow:
 ## Build Trigger
 
 ```bash
-git tag v4.7.1-eric.17
+git tag v4.7.1-eric.18
 git push origin eric/custom-shopping-flow
-git push origin v4.7.1-eric.17
+git push origin v4.7.1-eric.18
 ```
 
 The workflow pushes:
 
 ```text
-192.168.200.101:54453/zhangzhicheng/eric-grocy:v4.7.1-eric.17
+192.168.200.101:54453/zhangzhicheng/eric-grocy:v4.7.1-eric.18
 192.168.200.101:54453/zhangzhicheng/eric-grocy:latest
 192.168.200.101:54453/zhangzhicheng/eric-grocy:sha-<commit>
 ```

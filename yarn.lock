@@ -4,29 +4,29 @@
 
 "@danielfarrell/bootstrap-combobox@https://github.com/berrnd/bootstrap-combobox.git#master-fork":
   version "1.2.0"
-  resolved "https://github.com/berrnd/bootstrap-combobox.git#4dd21c3dcd3e3601f77718d493cd626e7cf0e782"
+  resolved "https://github.com/berrnd/bootstrap-combobox.git#76d7b5a17bfaaad5ed2296b321d85bf60a900e2b"
 
 "@fontsource/roboto@^5.1.1":
-  version "5.2.10"
-  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-5.2.10.tgz#b985d34de475913b41d0fb57e2dcd0b16ab9ecb5"
-  integrity sha512-8HlA5FtSfz//oFSr2eL7GFXAiE7eIkcGOtx7tjsLKq+as702x9+GU7K95iDeWFapHC4M2hv9RrpXKRTGGBI8Zg==
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-5.3.0.tgz#fd0dcdaa0c6ef3a1621253ea702db933ca1b573a"
+  integrity sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==
 
-"@fortawesome/fontawesome-free@^6.1.1":
-  version "6.7.2"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.7.2.tgz#8249de9b7e22fcb3ceb5e66090c30a1d5492b81a"
-  integrity sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==
+"@fortawesome/fontawesome-free@^7.3.1":
+  version "7.3.1"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-7.3.1.tgz#9d7d7df8f850637e001d24e6cd901422b4b09099"
+  integrity sha512-wmglKKPDIkgV3aWlZzWECCPoGIkYCulzBwxG9+w7rc5BGapZ6cPMpoPOT8k36J0Ni7PPX6c/rsoMWfS4d1MUMg==
 
 "@scarf/scarf@=1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.4.0.tgz#3bbb984085dbd6d982494538b523be1ce6562972"
   integrity sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==
 
-"@zxing/library@^0.21.3":
-  version "0.21.3"
-  resolved "https://registry.yarnpkg.com/@zxing/library/-/library-0.21.3.tgz#0a4cb777701884131832b05922d7e88ef1b87ab4"
-  integrity sha512-hZHqFe2JyH/ZxviJZosZjV+2s6EDSY0O24R+FQmlWZBZXP9IqMo7S3nb3+2LBWxodJQkSurdQGnqE7KXqrYgow==
+"@zxing/library@^0.23.0":
+  version "0.23.0"
+  resolved "https://registry.yarnpkg.com/@zxing/library/-/library-0.23.0.tgz#cc1a341f064b36fc24631cc13797bcd329e36ca7"
+  integrity sha512-6fkkoFwP8CHxl6ugnPsj74PLJgX2iRv5zczGAyt5OBzQgxFhuhF0NCEc4t4OvSr8xAv2MRLlI0Iu9ZGDZQ2urA==
   dependencies:
-    ts-custom-error "^3.2.1"
+    ts-custom-error "^3.3.1"
   optionalDependencies:
     "@zxing/text-encoding" "~0.9.0"
 
@@ -40,7 +40,7 @@ animate.css@^3.7.2:
   resolved "https://registry.yarnpkg.com/animate.css/-/animate.css-3.7.2.tgz#e73e0d50e92cb1cfef1597d9b38a9481020e08ea"
   integrity sha512-0bE8zYo7C0KvgOYrSVfrzkbYk6IOTVPNqkiHg2cbyF4Pq/PXzilz4BRWA3hwEUBoMp5VBgrC29lQIZyhRWdBTw==
 
-bootbox@^6.0.0:
+bootbox@^6.0.4:
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/bootbox/-/bootbox-6.0.4.tgz#005f12d712da5d5723a13a0495e5fc4ad2cc1472"
   integrity sha512-LoOT8WbiH6YjlhIxzJ3nZHK1p9tlcoa6QNILSGJMx9ihydzFk+DVzNVWNpHk8MZLOkizey1XhFu1dhoqk77xVg==
@@ -56,9 +56,9 @@ bootstrap@^4.5.2, bootstrap@^4.6.1:
   integrity sha512-51Bbp/Uxr9aTuy6ca/8FbFloBUJZLHwnhTcnjIeRn2suQWsWzcuJhGjKDB5eppVte/8oCdOL3VuwxvZDUggwGQ==
 
 bwip-js@^4.5.1:
-  version "4.9.0"
-  resolved "https://registry.yarnpkg.com/bwip-js/-/bwip-js-4.9.0.tgz#8a863b17f0890385432ee44f1c7719c752b5e268"
-  integrity sha512-U3aWIxR/Px4m3GPd0opQ5GQJq/G8Cj0cr5z5hrcvy/SAApPnfkLqBqjRuB3GiEAasEQup3m7k/MDM/uiS9te8Q==
+  version "4.11.4"
+  resolved "https://registry.yarnpkg.com/bwip-js/-/bwip-js-4.11.4.tgz#01e7cc5fe0d9a1aff0715ed34bf5b8966a81e3b1"
+  integrity sha512-FOXnOQkinxog8FwxdnPB+8k2wRqwPnqXwxX37KcXOtMNW+9CinOkGv9MtIoRC4HX/UyogT0/9lIp6FDm2DcquQ==
 
 chart.js@^2.8.0:
   version "2.9.4"
@@ -129,11 +129,11 @@ datatables.net-bs4@^1.10.22, datatables.net-bs4@^1.13.0:
     jquery "1.8 - 4"
 
 datatables.net-bs4@^2:
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/datatables.net-bs4/-/datatables.net-bs4-2.3.7.tgz#c361ff8f439bf63e1ec4862085ec667fb96bfd7f"
-  integrity sha512-ZyofK/3Unj0lQdAIsI9gT5oGCwTnx8y2UF6muYkbdO/Rw9h+x2kQwFkuCX5J0j6N2B+YCwzHk2OPu9yU8nk1Kw==
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/datatables.net-bs4/-/datatables.net-bs4-2.3.8.tgz#da3660b5981ba062aa59dda1c81c524201111742"
+  integrity sha512-i65jbIw6DPG6KyUXRacCFzbawRYA2UjPg68tPkOns/r9YXQngSMQ/+izdmJk1xnPDRXh3cuTqV8cqOIy1NXH1A==
   dependencies:
-    datatables.net "2.3.7"
+    datatables.net "2.3.8"
     jquery ">=1.7"
 
 datatables.net-colreorder-bs4@^1.5.2:
@@ -202,10 +202,10 @@ datatables.net@1.13.11, datatables.net@^1.10.22, datatables.net@^1.13.0:
   dependencies:
     jquery "1.8 - 4"
 
-datatables.net@2.3.7, datatables.net@^2:
-  version "2.3.7"
-  resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-2.3.7.tgz#3cd34f6f5d1f40a46b5a20a4ba32604bdbcd6738"
-  integrity sha512-AvsjG/Nkp6OxeyBKYZauemuzQCPogE1kOtKwG4sYjvdqGCSLiGaJagQwXv4YxG+ts5vaJr6qKGG9ec3g6vTo3w==
+datatables.net@2.3.8, datatables.net@^2:
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/datatables.net/-/datatables.net-2.3.8.tgz#55a8dbe3bd2196951c498ab79bf44602a2bf3229"
+  integrity sha512-uhViowhlDlheAuo5a8TrkQqADsjrtGeOyvrigvr4t0+K3MyAWqClORXWAYIcN9VLX6iIX0C8O9gwJNd01hITRg==
   dependencies:
     jquery ">=1.7"
 
@@ -275,9 +275,9 @@ summernote@^0.9.1:
   integrity sha512-5Hfuey6+N0XIbk8ZpkGEVDmrkRVRHZWKBhw/072i9/TJLaWUKboB+KOyyd6AzDP2CQs1O6or4zRTU8HY30kt4w==
 
 swagger-ui-dist@^5.2.0:
-  version "5.32.1"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.32.1.tgz#21abc8944763901c9fade461c2c669f5621985e3"
-  integrity sha512-6HQoo7+j8PA2QqP5kgAb9dl1uxUjvR0SAoL/WUp1sTEvm0F6D5npgU2OGCLwl++bIInqGlEUQ2mpuZRZYtyCzQ==
+  version "5.32.15"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.32.15.tgz#0bbaa62695104dbf2db06ad9bbbaaa127d830614"
+  integrity sha512-TSFER+rFQlf1nzk6WvKkMaHTxAPQ3eAAxigFThnxQedSREanfZgSbJFayZVs/ULnSbNdrJOb99vLD6xpb3R3eg==
   dependencies:
     "@scarf/scarf" "=1.4.0"
 
@@ -299,7 +299,7 @@ toastr@^2.1.4:
   dependencies:
     jquery ">=1.12.0"
 
-ts-custom-error@^3.2.1:
+ts-custom-error@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/ts-custom-error/-/ts-custom-error-3.3.1.tgz#8bd3c8fc6b8dc8e1cb329267c45200f1e17a65d1"
   integrity sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==

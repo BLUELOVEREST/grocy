@@ -16,7 +16,7 @@ jobs:
     env:
       REGISTRY: 192.168.200.101:54453
       IMAGE_REPOSITORY: zhangzhicheng/eric-grocy
-      GROCY_BASE_VERSION: 4.6.0
+      GROCY_BASE_VERSION: 4.7.1
 
     steps:
       - name: Checkout repository

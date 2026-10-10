@@ -17,8 +17,8 @@ RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoload
 	--ignore-platform-req=ext-intl
 
 FROM php:8.5-apache-bookworm AS runtime
-ARG ERIC_GROCY_VERSION=4.6.0-eric.1
-ARG GROCY_BASE_VERSION=4.6.0
+ARG ERIC_GROCY_VERSION=4.7.1-eric.17
+ARG GROCY_BASE_VERSION=4.7.1
 LABEL org.opencontainers.image.title="Eric Grocy"
 LABEL org.opencontainers.image.description="Personal Grocy build with Eric shopping list customizations"
 LABEL org.opencontainers.image.version="${ERIC_GROCY_VERSION}"

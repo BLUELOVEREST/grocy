@@ -418,7 +418,7 @@ $('.save-product-button').on('click', function(e)
 		function(xhr)
 		{
 			Grocy.FrontendHelpers.EndUiBusy("product-form");
-			console.error(xhr);
+			Grocy.FrontendHelpers.ShowGenericError('Error while saving, probably this item already exists', xhr.response);
 		}
 	);
 });
